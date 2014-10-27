@@ -1,5 +1,8 @@
 // http://guillaumegouessan.com/talk/move/
 // http://guillaumegouessan.com/talk/workshop/
+// http://3delyvisions.co/skf.htm
+// http://tf3dm.com/
+// http://stackoverflow.com/questions/11243689/prefered-3d-model-format-of-three-js
 
 var webgl, gui;
 
