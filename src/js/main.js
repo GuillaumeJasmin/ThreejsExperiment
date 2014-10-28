@@ -12,7 +12,12 @@ $(document).ready(init);
 
 function init(){
     webgl = new WebGL(window.innerWidth, window.innerHeight);
-    webgl.initialize();
+    var onThreeReady = _.after(2, animate);
+    
+    webgl.initialize({
+        onModelsLoaded: onThreeReady
+    });
+    
     $('.three').append(webgl.renderer.domElement);
 
     gui = new dat.GUI();
@@ -20,9 +25,11 @@ function init(){
 
     $(window).on('resize', resizeHandler);
 
-    setTimeout(function () {
-        animate();
-    }, 3000);
+    onThreeReady();
+
+    // setTimeout(function () {
+    //     onThreeReady();
+    // }, 5000);
     
 }
 

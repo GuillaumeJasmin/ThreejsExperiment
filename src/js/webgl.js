@@ -1,8 +1,23 @@
 var scene;
 
-var WebGL = (function(){
+var modelsList = {
+    'WhiteShark': {
+        file: 'whiteShark.dae'
+    },
+    'Patrick': {
+        file: 'Patrick.dae'
+    },
+    'Radeau': {
+        file: 'radeau.dae'
+    },
+    'Barque': {
+        file: 'barque.dae'
+    }
+};
 
-    // var startTime   = Date.now();
+
+
+var WebGL = (function(){
     
     function WebGL (){
         this.renderer = null;
@@ -10,6 +25,7 @@ var WebGL = (function(){
         this.scene = null; 
         this.controls = null;
         this.water = null;
+        this.modelsPath = 'assets/models/';
     };
 
 
@@ -23,25 +39,19 @@ var WebGL = (function(){
         }
     })();
 
-    WebGL.prototype.initialize = function () {
+    WebGL.prototype.initialize = function (params) {
+
+        this.params = params;
         
         // Initialize Renderer, Camera and Scene
         this.renderer = this.enable? new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
         this.scene = new THREE.Scene();
         scene = this.scene;
         
-        this.camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 3000000);
-        this.camera.position.set(1000, 500, -1500);
-        this.camera.lookAt(new THREE.Vector3(0, 100, 0));
-        
-        // Initialize Orbit control     
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.addCameras();
 
-        // Add light
-        var directionalLight = new THREE.DirectionalLight(0xffff55, 1);
-        directionalLight.position.set(-600, 300, 600);
-        this.scene.add(directionalLight);
-        
+        this.addLights();
+
         // Load textures        
         var waterNormals = new THREE.ImageUtils.loadTexture('../assets/img/waternormals.jpg');
         waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping; 
@@ -52,7 +62,7 @@ var WebGL = (function(){
             textureHeight: 256,
             waterNormals: waterNormals,
             alpha:  1.0,
-            sunDirection: directionalLight.position.normalize(),
+            sunDirection: this.directionalLightRight.position.normalize(),
             sunColor: 0xffffff,
             waterColor: 0x001e5f,
             betaVersion: 0,
@@ -62,6 +72,7 @@ var WebGL = (function(){
             new THREE.PlaneGeometry(900000, 900000, 100, 100), 
             this.water.material
         );
+
         aMeshMirror.add(this.water);
         aMeshMirror.rotation.x = - Math.PI * 0.5;
         
@@ -73,218 +84,196 @@ var WebGL = (function(){
 
         // this.generateParticules();
 
-        // this.orque();
+        // this.addAircraftCarrier();
+        // this.addBarque();
+        // this.addPatrick();
+        // this.addWhiteSHark();
+        // this.addRadeau();
 
-        this.boat();
+        // this.cameraOnAircraftCarrier();
 
-        this.addBarque();
-        this.patrick();
-        this.addWhiteSHark();
+        // params.onModelsLoaded();
+
+        this.loadModels();
 
     };
 
-    WebGL.prototype.orque = function () {
-        // var loader = new THREE.JSONLoader(); // init the loader util
+    WebGL.prototype.loadModels = function () {
 
-        // // init loading
-        // loader.load('assets/img/leeperrysmith/LeePerrySmith.js', function (geometry) {
-        //   // create a new material
-        //   var material = new THREE.MeshLambertMaterial({
-        //     map: THREE.ImageUtils.loadTexture('assets/img/leeperrysmith/Map-COL.jpg'),  // specify and load the texture
-        //     colorAmbient: [0.480000026226044, 0.480000026226044, 0.480000026226044],
-        //     colorDiffuse: [0.480000026226044, 0.480000026226044, 0.480000026226044],
-        //     colorSpecular: [0.8999999761581421, 0.8999999761581421, 0.8999999761581421]
-        //   });
-          
-        //   // create a mesh with models geometry and material
-        //   var mesh = new THREE.Mesh(
-        //     geometry,
-        //     material
-        //   );
+        var self = this;
 
-        //   mesh.position.y = 5;
-          
-        //   mesh.rotation.y = -Math.PI/5;
-          
-        //   this.scene.add(mesh);
-        // });
+        this.loader = new THREE.ColladaLoader();        
+        this.loader.options.convertUpAxis = true;
 
-        var that = this;
+        for(var modelName in modelsList) {
+           if (modelsList.hasOwnProperty(modelName)) {
+                this.loadModel(modelName);
+           }
+        }
+    };
 
-        var manager = new THREE.LoadingManager();
-        manager.onProgress = function ( item, loaded, total ) {
+    /**
+     * return void
+     * async
+     */
+    WebGL.prototype.loadModel = function (modelName) {
+        var self = this;
 
-            console.log( item, loaded, total );
-
-        };
-
-        var texture = new THREE.Texture();
-
-        var onProgress = function ( xhr ) {
-            if ( xhr.lengthComputable ) {
-                var percentComplete = xhr.loaded / xhr.total * 100;
-                console.log( Math.round(percentComplete, 2) + '% downloaded' );
-            }
-        };
-
-        var onError = function ( xhr ) {
-        };
-
-
-        var loader = new THREE.ImageLoader( manager );
-                loader.load('assets/Aircraft/Acft Carrier Top.jpg', function ( image ) {
-
-                    texture.image = image;
-                    texture.needsUpdate = true;
-
+        this.loader.load('assets/models/' + modelsList[modelName].file, function (collada) {
+            modelsList[modelName].obj = collada.scene;
+            self.modelLoaded();
         });
+    }
+
+    /**
+     * @return void
+     */
+    WebGL.prototype.modelLoaded = _.after(_.size(modelsList), function () {
+        this.onModelsLoaded();
+    });
+
+    /**
+     * 
+     */
+    WebGL.prototype.onModelsLoaded = function () {
+        
+        console.log('b', modelsList);
+
+        // this.addAircraftCarrier();
+        // this.addBarque();
+        // this.addPatrick();
+        this.addWhiteSHark();
+        // this.addRadeau();
+
+        this.params.onModelsLoaded();
+    };
+
+    WebGL.prototype.addCameras = function () {
+
+        this.camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 3000000);
+        this.camera.position.set(1000, 500, -1500);
+        this.camera.lookAt(new THREE.Vector3(0, 100, 0));
+        
+        // Initialize Orbit control
+        this.OrbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement); 
+        this.controls = this.OrbitControls;
+    };
+
+    WebGL.prototype.addLights = function () {
 
 
-        var loader = new THREE.OBJLoader( manager );
-        loader.load('assets/Aircraft/Aircraft Carrier.obj', function ( object ) {
+        this.lightSize = 100;
 
-            object.traverse( function ( child ) {
-
-                if ( child instanceof THREE.Mesh ) {
-
-                    child.material.map = texture;
-
-                }
-
-            } );
-
-            console.log('object', object);
-
-            object.position.y = 1;
-            that.scene.add( object );
-
-        }, onProgress, onError );
+        // Add light
+        this.directionalLightRight = new THREE.DirectionalLight(0xffffff, 0.8);
+        this.directionalLightRight.position.set(-50000, 25000, -50000);
+        this.scene.add(this.directionalLightRight);
+        
+        var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
+        sphere.overdraw = true;
+        sphere.position.set(this.directionalLightRight.position.x, this.directionalLightRight.position.y, this.directionalLightRight.position.z);
+        self.scene.add(sphere);
 
 
+        var directionalLightLeft = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLightLeft.position.set(50000, 25000, -50000);
+        this.scene.add(directionalLightLeft);
+        
+        var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
+        sphere.overdraw = true;
+        sphere.position.set(directionalLightLeft.position.x, directionalLightLeft.position.y, directionalLightLeft.position.z);
+        self.scene.add(sphere);
+
+        this.directionalLightTop = new THREE.DirectionalLight(0xffffff, 0.8);
+        this.directionalLightTop.position.set(0, 25000, 50000);
+        this.scene.add(this.directionalLightTop);
+        
+        var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
+        sphere.overdraw = true;
+        sphere.position.set(this.directionalLightTop.position.x, this.directionalLightTop.position.y, this.directionalLightTop.position.z);
+        self.scene.add(sphere);
+
+        // this.directionalCenter = new THREE.DirectionalLight(0xffffff, 0.5);
+        // this.directionalCenter.position.set(0, 20000, 500);
+        // this.scene.add(this.directionalCenter);
+        
+        // var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
+        // sphere.overdraw = true;
+        // sphere.position.set(this.directionalCenter.position.x, this.directionalCenter.position.y, this.directionalCenter.position.z);
+        // self.scene.add(sphere);
+    }
+
+    WebGL.prototype.addAircraftCarrier = function () {
+        this.aircraftCarrier = new AircraftCarrier();
+    };
+
+    WebGL.prototype.cameraOnAircraftCarrier  = function () {
+        this.aircraftCarrier.obj.add(this.camera);
+        this.camera.position.set(0, 300, -800);
+        //this.camera.rotation.set(0.4, 0, 0);
     };
 
     WebGL.prototype.addWhiteSHark = function () {
-        var that = this;
+
+        this.whiteSharkList = [];
+
+        for (var i = 0; i < 10; i += 1) {    
+            var shark = new WhiteShark({
+                randomPosition: true
+            });
+
+            this.whiteSharkList.push(shark);
+        
+            //this.shark.goDown();    
+        }
+    };
+
+    WebGL.prototype.addRadeau = function () {
+        var self = this;
 
         var loader = new THREE.ColladaLoader();
-
         loader.options.convertUpAxis = true;
-
-        loader.load( 'assets/white-shark.dae', function ( collada ) {
-        // loader.load( 'assets/yacht2.5.dae', function ( collada ) {
-        
-            that.whiteShark = collada.scene;
+        loader.load(this.modelsPath + 'radeau.dae', function ( collada ) {
+            self.radeau = collada.scene;
             var skin = collada.skins[0];
-
-            that.whiteShark.position.set(-200,0,500);
-            that.whiteShark.scale.set(10,10,10);
-
-            that.scene.add(that.whiteShark);
-
+            self.radeau.position.set(300,0,-500);
+            self.radeau.scale.set(30,30,30);
+            self.scene.add(self.radeau);
         });
     };
 
     WebGL.prototype.addBarque = function () {
-        var that = this;
+        var self = this;
 
         var loader = new THREE.ColladaLoader();
-
         loader.options.convertUpAxis = true;
-
-        loader.load( 'assets/OldBoat.dae', function ( collada ) {
-        // loader.load( 'assets/yacht2.5.dae', function ( collada ) {
-        
-            that.barque = collada.scene;
+        loader.load(this.modelsPath + 'barque.dae', function ( collada ) {
+            self.barque = collada.scene;
             var skin = collada.skins[0];
-
-            that.barque.position.set(200,0,0);
-            that.barque.scale.set(5,5,5);
-
-            that.scene.add(that.barque);
-
+            self.barque.position.set(700,0,0);
+            self.barque.scale.set(5,5,5);
+            self.scene.add(self.barque);
         });
     };
 
 
-    WebGL.prototype.patrick = function () {
-        var that = this;
+    WebGL.prototype.addPatrick = function () {
+        var self = this;
 
         var loader = new THREE.ColladaLoader();
-
         loader.options.convertUpAxis = true;
-
-        loader.load( 'assets/Patrick.dae', function ( collada ) {
-            
-         
-            var dae = collada.scene;
+        loader.load(this.modelsPath + 'Patrick.dae', function ( collada ) {
+            this.patrick = collada.scene;
             var skin = collada.skins[ 0 ];
 
-            dae.position.set(200,35,0);//x,z,y- if you think in blender dimensions ;)
-            dae.scale.set(10,10,10);
+            this.patrick.position.set(700,35,0); //x,z,y- if you think in blender dimensions ;)
+            this.patrick.scale.set(10,10,10);
 
-            that.scene.add(dae);
+            self.scene.add(this.patrick);
 
         });
     };
 
-    WebGL.prototype.boat = function () {
-
-        var that = this;
-
-        var manager = new THREE.LoadingManager();
-        manager.onProgress = function ( item, loaded, total ) {
-
-            console.log( item, loaded, total );
-
-        };
-
-        var texture = new THREE.Texture();
-
-        var onProgress = function ( xhr ) {
-            if ( xhr.lengthComputable ) {
-                var percentComplete = xhr.loaded / xhr.total * 100;
-                console.log( Math.round(percentComplete, 2) + '% downloaded' );
-            }
-        };
-
-        var onError = function ( xhr ) {
-        };
-
-
-        var loader = new THREE.ImageLoader( manager );
-                loader.load('assets/Aircraft/Acft Carrier Top.jpg', function ( image ) {
-                
-
-                    texture.image = image;
-                    texture.needsUpdate = true;
-
-        });
-
-
-        var loader = new THREE.OBJLoader( manager );
-        loader.load('assets/Aircraft/Aircraft Carrier.obj', function ( object ) {
-
-
-            object.traverse( function ( child ) {
-
-                if ( child instanceof THREE.Mesh ) {
-
-                    child.material.map = texture;
-
-                }
-
-            } );
-
-            console.log('object', object);
-
-            object.position.y = 1;
-            object.position.x = 1000;
-            that.scene.add( object );
-
-        }, onProgress, onError );
-
-
-    };
 
     WebGL.prototype.generateParticules = function () {
 
@@ -297,7 +286,7 @@ var WebGL = (function(){
     };
 
     WebGL.prototype.newParticule = function () {
-        var that = this;
+        var self = this;
         if(this.nbParticule < 0) {
             return false;
         }
@@ -305,12 +294,12 @@ var WebGL = (function(){
         this.nbParticule--;
 
         setTimeout(function (){
-            sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 50, 50), new THREE.MeshBasicMaterial({color: 0xffff00}));
+            sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
             sphere.overdraw = true;
             sphere.position.y = -10;
-            that.scene.add(sphere);
-            that.particulesList.push(sphere);
-            that.newParticule();
+            self.scene.add(sphere);
+            self.particulesList.push(sphere);
+            self.newParticule();
         }, 500);
     }
 
@@ -353,11 +342,22 @@ var WebGL = (function(){
 
     WebGL.prototype.render = function () {
         this.water.material.uniforms.time.value += 1.5 / 60.0;
+        
         this.controls.update();
-        this.camera.position.x += 2;
+        
+        // this.camera.position.x += 2;
 
         // this.barque.position.z += 2;
         // this.barque.rotation.y += 0.01;
+
+        // move sharks
+        for (var i = 0; i < this.whiteSharkList.length; i += 1) {
+            this.whiteSharkList[i].move();
+        }
+
+        // this.cameraOnAircraftCarrier();
+
+        // this.aircraftCarrier.move();
 
         this.display();
     },
