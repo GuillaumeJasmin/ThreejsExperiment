@@ -32,7 +32,7 @@ var WebGL = (function(){
         
         this.camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 3000000);
         this.camera.position.set(1000, 500, -1500);
-        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        this.camera.lookAt(new THREE.Vector3(0, 100, 0));
         
         // Initialize Orbit control     
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
@@ -73,7 +73,13 @@ var WebGL = (function(){
 
         // this.generateParticules();
 
-        this.orque();
+        // this.orque();
+
+        this.boat();
+
+        this.addBarque();
+        this.patrick();
+        this.addWhiteSHark();
 
     };
 
@@ -125,17 +131,17 @@ var WebGL = (function(){
         };
 
 
-        // var loader = new THREE.ImageLoader( manager );
-        //         loader.load('assets/img/leeperrysmith/Map-COL.jpg', function ( image ) {
+        var loader = new THREE.ImageLoader( manager );
+                loader.load('assets/Aircraft/Acft Carrier Top.jpg', function ( image ) {
 
-        //             texture.image = image;
-        //             texture.needsUpdate = true;
+                    texture.image = image;
+                    texture.needsUpdate = true;
 
-        // });
+        });
 
 
         var loader = new THREE.OBJLoader( manager );
-        loader.load('assets/img/boat.obj', function ( object ) {
+        loader.load('assets/Aircraft/Aircraft Carrier.obj', function ( object ) {
 
             object.traverse( function ( child ) {
 
@@ -150,6 +156,129 @@ var WebGL = (function(){
             console.log('object', object);
 
             object.position.y = 1;
+            that.scene.add( object );
+
+        }, onProgress, onError );
+
+
+    };
+
+    WebGL.prototype.addWhiteSHark = function () {
+        var that = this;
+
+        var loader = new THREE.ColladaLoader();
+
+        loader.options.convertUpAxis = true;
+
+        loader.load( 'assets/white-shark.dae', function ( collada ) {
+        // loader.load( 'assets/yacht2.5.dae', function ( collada ) {
+        
+            that.whiteShark = collada.scene;
+            var skin = collada.skins[0];
+
+            that.whiteShark.position.set(-200,0,500);
+            that.whiteShark.scale.set(10,10,10);
+
+            that.scene.add(that.whiteShark);
+
+        });
+    };
+
+    WebGL.prototype.addBarque = function () {
+        var that = this;
+
+        var loader = new THREE.ColladaLoader();
+
+        loader.options.convertUpAxis = true;
+
+        loader.load( 'assets/OldBoat.dae', function ( collada ) {
+        // loader.load( 'assets/yacht2.5.dae', function ( collada ) {
+        
+            that.barque = collada.scene;
+            var skin = collada.skins[0];
+
+            that.barque.position.set(200,0,0);
+            that.barque.scale.set(5,5,5);
+
+            that.scene.add(that.barque);
+
+        });
+    };
+
+
+    WebGL.prototype.patrick = function () {
+        var that = this;
+
+        var loader = new THREE.ColladaLoader();
+
+        loader.options.convertUpAxis = true;
+
+        loader.load( 'assets/Patrick.dae', function ( collada ) {
+            
+         
+            var dae = collada.scene;
+            var skin = collada.skins[ 0 ];
+
+            dae.position.set(200,35,0);//x,z,y- if you think in blender dimensions ;)
+            dae.scale.set(10,10,10);
+
+            that.scene.add(dae);
+
+        });
+    };
+
+    WebGL.prototype.boat = function () {
+
+        var that = this;
+
+        var manager = new THREE.LoadingManager();
+        manager.onProgress = function ( item, loaded, total ) {
+
+            console.log( item, loaded, total );
+
+        };
+
+        var texture = new THREE.Texture();
+
+        var onProgress = function ( xhr ) {
+            if ( xhr.lengthComputable ) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log( Math.round(percentComplete, 2) + '% downloaded' );
+            }
+        };
+
+        var onError = function ( xhr ) {
+        };
+
+
+        var loader = new THREE.ImageLoader( manager );
+                loader.load('assets/Aircraft/Acft Carrier Top.jpg', function ( image ) {
+                
+
+                    texture.image = image;
+                    texture.needsUpdate = true;
+
+        });
+
+
+        var loader = new THREE.OBJLoader( manager );
+        loader.load('assets/Aircraft/Aircraft Carrier.obj', function ( object ) {
+
+
+            object.traverse( function ( child ) {
+
+                if ( child instanceof THREE.Mesh ) {
+
+                    child.material.map = texture;
+
+                }
+
+            } );
+
+            console.log('object', object);
+
+            object.position.y = 1;
+            object.position.x = 1000;
             that.scene.add( object );
 
         }, onProgress, onError );
@@ -187,10 +316,7 @@ var WebGL = (function(){
 
     WebGL.prototype.loadSkyBox = function loadSkyBox() {
 
-        // var box = 'box-old';
-        var box = 'box-lakel';
-        
-
+        var box = 'box-lakel';        
         var aCubeMap = THREE.ImageUtils.loadTextureCube([
           'assets/img/' + box + '/west.jpg',
           'assets/img/' + box + '/east.jpg',
@@ -228,17 +354,10 @@ var WebGL = (function(){
     WebGL.prototype.render = function () {
         this.water.material.uniforms.time.value += 1.5 / 60.0;
         this.controls.update();
-        // this.camera.position.x += 2;
+        this.camera.position.x += 2;
 
-       //  var dtime   = Date.now() - startTime;
-        // this.cube.scale.x    = 1.0 + 0.3 * Math.sin(dtime / 300);
-        // this.cube.scale.y    = 1.0 + 0.3 * Math.sin(dtime / 300);
-        // this.cube.scale.z    = 1.0 + 0.3 * Math.sin(dtime / 300);
-        // this.engine.update( 0.01 * 0.5 );
-
-        // for(var i = 0; i < this.particulesList.length; i += 1){
-        //     this.particulesList[i].position.y += 10;
-        // }
+        // this.barque.position.z += 2;
+        // this.barque.rotation.y += 0.01;
 
         this.display();
     },

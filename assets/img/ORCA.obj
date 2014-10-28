@@ -2,11 +2,9 @@
 # Tue Aug 03 07:48:12 1999
 #
 # Translated by Viewpoint Interchange www.viewpoint.com
-
 mtllib orca.mtl
-
+usemtl defaultMat
 # orca_lwo
-g
 v 0.584435 0.0510806 2.3874
 v 0.590853 0.0491531 2.37211
 v 0.590464 0.0542964 2.3722
@@ -17576,5 +17574,4 @@ f 2013 2014 2033
 f 2014 2015 2034
 f 2015 2016 2035
 f 2015 2035 2034
-s off
 # 3998 elements
