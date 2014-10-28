@@ -16,6 +16,13 @@ var modelsList = {
 };
 
 
+var OBJList = {
+    'AircraftCarrier': {
+        objFile: 'Aircraft/Aircraft Carrier.obj',
+        imgFile: 'Aircraft/Acft Carrier Top.jpg'
+    }
+};
+
 
 var WebGL = (function(){
     
@@ -107,28 +114,82 @@ var WebGL = (function(){
 
         for(var modelName in modelsList) {
            if (modelsList.hasOwnProperty(modelName)) {
-                this.loadModel(modelName);
+                this.loadColladaModel(modelName);
            }
         }
+
+        this.manager = new THREE.LoadingManager();
+        this.manager.onProgress = function ( item, loaded, total ) {
+            console.log( item, loaded, total );
+        };
+
+        this.OBJLoaderOnProgress = function ( xhr ) {
+            if ( xhr.lengthComputable ) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log( Math.round(percentComplete, 2) + '% downloaded' );
+            }
+        };
+
+
+        this.OBJLoaderOnError = function ( xhr ) {};
+
+        this.imgLoader = new THREE.ImageLoader(this.manager);
+        this.OBJLoader = new THREE.OBJLoader(this.manager);
+
+        for(var modelName in OBJList) {
+            if (OBJList.hasOwnProperty(modelName)) {
+                this.loadOBJModel(modelName);
+            }
+        }
+
     };
 
     /**
      * return void
      * async
      */
-    WebGL.prototype.loadModel = function (modelName) {
+    WebGL.prototype.loadColladaModel = function (modelName) {
         var self = this;
 
         this.loader.load('assets/models/' + modelsList[modelName].file, function (collada) {
-            modelsList[modelName].obj = collada.scene;
+            modelsList[modelName].obj = collada;
             self.modelLoaded();
         });
     }
 
     /**
+     * return void
+     * async
+     */
+    WebGL.prototype.loadOBJModel = function (modelName) {
+        var self = this;
+
+        var texture = new THREE.Texture();
+        this.imgLoader.load('assets/models/' + OBJList[modelName].imgFile, function (image) {
+            texture.image = image;
+            texture.needsUpdate = true;
+            self.modelLoaded();
+        });
+
+        
+        this.OBJLoader.load('assets/models/' + OBJList[modelName].objFile, function (object) {
+
+            OBJList[modelName].obj = object;
+            OBJList[modelName].obj.traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+                    child.material.map = texture;
+                }
+            });
+
+            self.modelLoaded();
+
+        }, this.OBJLoaderOnProgress, this.OBJLoaderOnError );
+    }
+
+    /**
      * @return void
      */
-    WebGL.prototype.modelLoaded = _.after(_.size(modelsList), function () {
+    WebGL.prototype.modelLoaded = _.after((_.size(modelsList) + _.size(OBJList) * 2), function () {
         this.onModelsLoaded();
     });
 
@@ -136,14 +197,12 @@ var WebGL = (function(){
      * 
      */
     WebGL.prototype.onModelsLoaded = function () {
-        
-        console.log('b', modelsList);
 
-        // this.addAircraftCarrier();
-        // this.addBarque();
-        // this.addPatrick();
+        this.addAircraftCarrier();
+        this.addBarque();
+        this.addPatrick();
         this.addWhiteSHark();
-        // this.addRadeau();
+        this.addRadeau();
 
         this.params.onModelsLoaded();
     };
@@ -229,49 +288,16 @@ var WebGL = (function(){
     };
 
     WebGL.prototype.addRadeau = function () {
-        var self = this;
-
-        var loader = new THREE.ColladaLoader();
-        loader.options.convertUpAxis = true;
-        loader.load(this.modelsPath + 'radeau.dae', function ( collada ) {
-            self.radeau = collada.scene;
-            var skin = collada.skins[0];
-            self.radeau.position.set(300,0,-500);
-            self.radeau.scale.set(30,30,30);
-            self.scene.add(self.radeau);
-        });
+        this.radeau = new Radeau();
     };
 
     WebGL.prototype.addBarque = function () {
-        var self = this;
-
-        var loader = new THREE.ColladaLoader();
-        loader.options.convertUpAxis = true;
-        loader.load(this.modelsPath + 'barque.dae', function ( collada ) {
-            self.barque = collada.scene;
-            var skin = collada.skins[0];
-            self.barque.position.set(700,0,0);
-            self.barque.scale.set(5,5,5);
-            self.scene.add(self.barque);
-        });
+        this.barque = new Barque();
     };
 
 
     WebGL.prototype.addPatrick = function () {
-        var self = this;
-
-        var loader = new THREE.ColladaLoader();
-        loader.options.convertUpAxis = true;
-        loader.load(this.modelsPath + 'Patrick.dae', function ( collada ) {
-            this.patrick = collada.scene;
-            var skin = collada.skins[ 0 ];
-
-            this.patrick.position.set(700,35,0); //x,z,y- if you think in blender dimensions ;)
-            this.patrick.scale.set(10,10,10);
-
-            self.scene.add(this.patrick);
-
-        });
+        this.patrick = new Patrick();
     };
 
 
@@ -357,7 +383,7 @@ var WebGL = (function(){
 
         // this.cameraOnAircraftCarrier();
 
-        // this.aircraftCarrier.move();
+        this.aircraftCarrier.move();
 
         this.display();
     },

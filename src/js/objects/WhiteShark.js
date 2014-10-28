@@ -7,45 +7,28 @@ var WhiteShark = function (params) {
     this.timeBeforeChangeDirection = this._getTimeBeforeChangeDirection();
     this.timeDuringChangeDirection = this._getTimeDuringChangeDirection();
     this.directionY = this._getRandomDirection();
-
-    // this.obj = {};
-
-    // var loader = new THREE.ColladaLoader();
-    // loader.options.convertUpAxis = true;
-    // loader.load('assets/models/whiteShark.dae', function ( collada ) {
-    //     self.obj = collada.scene;
-    //     var skin = collada.skins[0];
-    //     if(params.randomPosition){
-    //         self.obj.position.set(randomNumber(1000, -1000), 0, randomNumber(1000, -1000));
-    //     }
-    //     else {
-    //         self.obj.position.set(params.position.x, params.position.y || 0, params.position.z);    
-    //     }
-        
-    //     self.obj.scale.set(10, 10, 10);
-    //     scene.add(self.obj);
-    // });
     
-
     if(!modelsList['WhiteShark'].obj){
         console.error('No collada for WhiteShark');
     }
 
-    self.obj = modelsList['WhiteShark'].obj.clone();
+    this.collada = modelsList['WhiteShark'].obj; 
+    this.obj = this.collada.scene.clone();
 
     if(params.randomPosition){
-        self.obj.position.set(randomNumber(1000, -1000), 0, randomNumber(1000, -1000));
+        this.obj.position.set(randomNumber(1000, -1000), 0, randomNumber(1000, -1000));
     }
     else {
-        self.obj.position.set(params.position.x, params.position.y || 0, params.position.z);    
+        this.obj.position.set(params.position.x, params.position.y || 0, params.position.z);    
     }
     
-    self.obj.scale.set(10, 10, 10);
-    scene.add(self.obj);
-
-    
+    this.obj.scale.set(20, 20, 20);
+    scene.add(this.obj);
 };
 
+/**
+ * execute at each frame
+ */
 WhiteShark.prototype.move = function () {
 
     if(this.isGoDown && this.obj.rotation.x < 1){
@@ -87,6 +70,9 @@ WhiteShark.prototype.goUp = function() {
     this.isGoDown = false;
 };
 
+/**
+ * check to change direction at each frame
+ */
 WhiteShark.prototype.changeDirection = function() {
 
     if(this.timeBeforeChangeDirection < 0){
@@ -106,10 +92,16 @@ WhiteShark.prototype.changeDirection = function() {
     
 };
 
+/**
+ * @return int
+ */
 WhiteShark.prototype._getTimeBeforeChangeDirection = function () {
     return Math.round(randomNumber(100, 300));
 }
 
+/**
+ * @return int
+ */
 WhiteShark.prototype._getTimeDuringChangeDirection = function () {
     return Math.round(randomNumber(0, 300));
 }
@@ -132,23 +124,3 @@ WhiteShark.prototype._getRandomDirection = function () {
 function randomNumber (min, max) {
     return Math.random() * (max - min) + min;
 };
-
-
-function cloneObj(obj) {
-    var clone = {};
-
-    for (var i in obj) {
-        
-        if (obj[i] && typeof obj[i] == 'object') {
-            if (obj[i].hasOwnProperty(i)) {
-                clone[i] = cloneObj(obj[i]);
-            }
-        } else {
-            clone[i] = obj[i];
-        }
-
-    }
-
-    return clone;
-}
-
