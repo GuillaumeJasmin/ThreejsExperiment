@@ -6,11 +6,12 @@
 // http://quaintproject.wordpress.com/2014/01/25/exporting-from-blender-to-web-gl-using-collada-and-three-js-part-2/
 // http://www.hongkiat.com/blog/60-excellent-free-3d-model-websites/
 
-var webgl, gui;
+var webgl, gui, helper;
 
 $(document).ready(init);
 
 function init(){
+    helper = new Helper();
     webgl = new WebGL(window.innerWidth, window.innerHeight);
     var onThreeReady = _.after(2, animate);
     
@@ -26,10 +27,6 @@ function init(){
     $(window).on('resize', resizeHandler);
 
     onThreeReady();
-
-    // setTimeout(function () {
-    //     onThreeReady();
-    // }, 5000);
     
 }
 

@@ -1,3 +1,5 @@
+var helper = new Helper();
+
 var WhiteShark = function (params) {
 
     var self = this;
@@ -16,13 +18,13 @@ var WhiteShark = function (params) {
     this.obj = this.collada.scene.clone();
 
     if(params.randomPosition){
-        this.obj.position.set(randomNumber(1000, -1000), 0, randomNumber(1000, -1000));
+        this.obj.position.set(helper.randomNumber(1000, -1000), 0, helper.randomNumber(1000, -1000));
     }
     else {
         this.obj.position.set(params.position.x, params.position.y || 0, params.position.z);    
     }
     
-    this.obj.scale.set(20, 20, 20);
+    this.obj.scale.set(10, 10, 10);
     scene.add(this.obj);
 };
 
@@ -52,7 +54,7 @@ WhiteShark.prototype.move = function () {
 
     this.changeDirection();
 
-    // console.log(Math.round(randomNumber(1, 0)));
+    // console.log(Math.round(helper.randomNumber(1, 0)));
 
     // saute
     // this.obj.rotation.x += this.rotationX;
@@ -78,7 +80,7 @@ WhiteShark.prototype.changeDirection = function() {
     if(this.timeBeforeChangeDirection < 0){
     
         // rotating...    
-        this.obj.rotation.y += randomNumber(0.01, 0.005) * this.directionY;
+        this.obj.rotation.y += helper.randomNumber(0.01, 0.005) * this.directionY;
 
         // stop rotation
         if(this.timeBeforeChangeDirection < -this.timeDuringChangeDirection){
@@ -96,21 +98,21 @@ WhiteShark.prototype.changeDirection = function() {
  * @return int
  */
 WhiteShark.prototype._getTimeBeforeChangeDirection = function () {
-    return Math.round(randomNumber(100, 300));
+    return Math.round(helper.randomNumber(100, 300));
 }
 
 /**
  * @return int
  */
 WhiteShark.prototype._getTimeDuringChangeDirection = function () {
-    return Math.round(randomNumber(0, 300));
+    return Math.round(helper.randomNumber(0, 300));
 }
 
 /**
  * @return 1 or -1
  */
 WhiteShark.prototype._getRandomDirection = function () {
-    return (Math.round(randomNumber(1, 0)) ? 1 : -1);
+    return (Math.round(helper.randomNumber(1, 0)) ? 1 : -1);
 }
 
 
@@ -121,6 +123,3 @@ WhiteShark.prototype._getRandomDirection = function () {
 //     }
 // };
 
-function randomNumber (min, max) {
-    return Math.random() * (max - min) + min;
-};

@@ -89,22 +89,16 @@ var WebGL = (function(){
 
         this.resize(window.innerWidth, window.innerHeight);
 
-        // this.generateParticules();
-
-        // this.addAircraftCarrier();
-        // this.addBarque();
-        // this.addPatrick();
-        // this.addWhiteSHark();
-        // this.addRadeau();
-
         // this.cameraOnAircraftCarrier();
-
-        // params.onModelsLoaded();
 
         this.loadModels();
 
     };
 
+    /**
+     * @return void
+     * load .dae model
+     */
     WebGL.prototype.loadModels = function () {
 
         var self = this;
@@ -300,16 +294,6 @@ var WebGL = (function(){
         this.patrick = new Patrick();
     };
 
-
-    WebGL.prototype.generateParticules = function () {
-
-        this.particulesList = [];
-        
-        this.nbParticule = 20;
-
-        this.newParticule();
-        
-    };
 
     WebGL.prototype.newParticule = function () {
         var self = this;
