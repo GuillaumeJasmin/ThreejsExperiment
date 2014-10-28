@@ -89,10 +89,12 @@ var WebGL = (function(){
 
         this.resize(window.innerWidth, window.innerHeight);
 
-        // this.cameraOnAircraftCarrier();
-
         this.loadModels();
 
+    };
+
+    WebGL.prototype.onDocumentKeyDown = function (event) {
+        console.log('yyo');
     };
 
     /**
@@ -197,6 +199,10 @@ var WebGL = (function(){
         this.addPatrick();
         this.addWhiteSHark();
         this.addRadeau();
+        
+        // camera focus
+        // this.cameraOnAircraftCarrier();
+        this.cameraOnPatrick();
 
         this.params.onModelsLoaded();
     };
@@ -263,6 +269,12 @@ var WebGL = (function(){
     WebGL.prototype.cameraOnAircraftCarrier  = function () {
         this.aircraftCarrier.obj.add(this.camera);
         this.camera.position.set(0, 300, -800);
+        //this.camera.rotation.set(0.4, 0, 0);
+    };
+
+    WebGL.prototype.cameraOnPatrick  = function () {
+        this.patrick.obj.add(this.camera);
+        this.camera.position.set(0, 0, -20);
         //this.camera.rotation.set(0.4, 0, 0);
     };
 
@@ -364,8 +376,6 @@ var WebGL = (function(){
         for (var i = 0; i < this.whiteSharkList.length; i += 1) {
             this.whiteSharkList[i].move();
         }
-
-        // this.cameraOnAircraftCarrier();
 
         this.aircraftCarrier.move();
 
