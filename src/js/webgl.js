@@ -23,6 +23,17 @@ var OBJList = {
     }
 };
 
+var keyCode = {
+    '38': 'top',
+    '40':'bottom',
+    '37':'left',
+    '39':'right',
+    // '122': 'top',
+    // '115':'bottom',
+    // '113':'left',
+    // '100':'right'
+};
+
 
 var WebGL = (function(){
     
@@ -47,6 +58,8 @@ var WebGL = (function(){
     })();
 
     WebGL.prototype.initialize = function (params) {
+
+        var self = this;
 
         this.params = params;
         
@@ -91,10 +104,118 @@ var WebGL = (function(){
 
         this.loadModels();
 
+        window.addEventListener('keydown', function (event) {self.onKeydown(event)}, false);
+        window.addEventListener('keyup', function (event) {self.onKeyup(event)}, false);
+
     };
 
-    WebGL.prototype.onDocumentKeyDown = function (event) {
-        console.log('yyo');
+    WebGL.prototype.onKeydown = function (event) {
+        
+
+        console.log(keyCode[event.keyCode]);
+
+
+        switch(keyCode[event.keyCode]){
+            case 'top':
+                this.startForward();
+                break;
+
+            case 'bottom':
+                this.startBackward();
+                break;
+
+            case 'left':
+                this.startRotationLeft();
+                break;
+
+            case 'right':
+                this.startRotationRight();
+                break;
+
+            default:
+                return false;
+                break;
+        }
+
+    };
+
+    WebGL.prototype.onKeyup = function (event) {
+        
+
+        console.log(keyCode[event.keyCode]);
+
+
+        switch(keyCode[event.keyCode]){
+            case 'top':
+                this.stopForward();
+                break;
+
+            case 'bottom':
+                this.stopBackward();
+                break;
+
+            case 'left':
+                this.stopRotationLeft();
+                break;
+
+            case 'right':
+                this.stopRotationRight();
+                break;
+
+            default:
+                return false;
+                break;
+        }
+
+    };
+
+    WebGL.prototype.startForward = function (event) {
+        if(this.movingForward){
+            return false;
+        }
+
+        this.movingForward = true;
+    };
+
+    WebGL.prototype.stopForward = function (event) {
+        this.movingForward = false;
+    };
+
+    WebGL.prototype.startBackward = function (event) {
+        if(this.movingBackward){
+            return false;
+        }
+
+        this.movingBackward = true;
+    };
+
+    WebGL.prototype.stopBackward = function (event) {
+        this.movingBackward = false;
+    };
+
+
+    WebGL.prototype.startRotationLeft = function (event) {
+        if(this.rotatingLeft){
+            return false;
+        }
+
+        this.rotatingLeft = true;
+    };
+
+    WebGL.prototype.stopRotationLeft = function (event) {
+        this.rotatingLeft = false;
+    };
+
+    WebGL.prototype.startRotationRight = function (event) {
+        if(this.rotatingRight){
+            return false;
+        }
+
+        this.rotatingRight = true;
+    };
+
+    WebGL.prototype.stopRotationRight = function (event) {
+        this.rotatingRight = false;
     };
 
     /**
@@ -304,6 +425,7 @@ var WebGL = (function(){
 
     WebGL.prototype.addPatrick = function () {
         this.patrick = new Patrick();
+        this.barque.obj.add(this.patrick.obj);
     };
 
 
@@ -378,6 +500,22 @@ var WebGL = (function(){
         }
 
         this.aircraftCarrier.move();
+
+        if(this.movingForward){
+            this.barque.obj.translateZ(4);
+        }
+        else if(this.movingBackward) {
+            this.barque.obj.translateZ(-4);
+        }
+
+        if(this.rotatingLeft){
+            this.barque.obj.rotation.y += 0.02;
+        }
+        else if(this.rotatingRight) {
+            this.barque.obj.rotation.y -= 0.02;
+        }
+
+        
 
         this.display();
     },
