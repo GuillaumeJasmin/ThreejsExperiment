@@ -10,9 +10,6 @@ var modelsList = {
     'Radeau': {
         file: 'radeau.dae'
     },
-    // 'Barque': {
-    //     file: 'barque.dae'
-    // },
     'Rondoudou': {
         file: 'rondoudou.dae'
     }
@@ -59,6 +56,10 @@ var WebGL = (function(){
         this.controls = null;
         this.water = null;
         this.modelsPath = 'assets/models/';
+        this.countFrameToSendAPIInitial = 2;
+        this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
+        this.lastUserInfo = {};
+        this.usersList = [];
     };
 
 
@@ -73,6 +74,8 @@ var WebGL = (function(){
     })();
 
     WebGL.prototype.initialize = function (params) {
+
+        this.firebaseInit();
 
         var self = this;
 
@@ -126,10 +129,6 @@ var WebGL = (function(){
 
     WebGL.prototype.onKeydown = function (event) {
         
-
-        console.log(keyCode[event.keyCode]);
-
-
         switch(keyCode[event.keyCode]){
             case 'top':
                 this.controlledObj.startForward();
@@ -156,10 +155,6 @@ var WebGL = (function(){
 
     WebGL.prototype.onKeyup = function (event) {
         
-
-        console.log(keyCode[event.keyCode]);
-
-
         switch(keyCode[event.keyCode]){
             case 'top':
                 this.controlledObj.stopForward();
@@ -316,27 +311,33 @@ var WebGL = (function(){
      */
     WebGL.prototype.onModelsLoaded = function () {
 
-        console.log('modelsList', modelsList);
-
         // this.addAircraftCarrier();
         
         this.addWhiteSHark();
 
-        this.addBarque();
+        // this.addBarque();
         
-        this.addBob();
-        this.addPatrick();
+        // this.addBob();
+        // this.addPatrick();
         
         this.addRadeau();
         this.addRondoudou();
+
+        // user
+        this.addUser();
+        this.barqueUser.add(this.camera);
+        this.controlledObj = this.barqueUser;
+        this.camera.position.set(0, 100, -300);
+
+
 
         // camera focus
         // this.cameraOnAircraftCarrier();
         // this.cameraOnPatrick();
         // this.cameraOnWhiteShark();
-        this.cameraOnBarque();
+        // this.cameraOnBarque();
 
-        this.controlledObj = this.barque;
+        // this.controlledObj = this.barque;
 
         this.params.onModelsLoaded();
     };
@@ -349,7 +350,7 @@ var WebGL = (function(){
         
         // Initialize Orbit control
         this.OrbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement); 
-        this.controls = this.OrbitControls;
+        //this.controls = this.OrbitControls;
     };
 
     WebGL.prototype.addLights = function () {
@@ -430,7 +431,7 @@ var WebGL = (function(){
 
         this.whiteSharkList = [];
 
-        for (var i = 0; i < 10; i += 1) {    
+        for (var i = 0; i < 6; i += 1) {    
             var shark = new WhiteShark({
                 randomPosition: true
             });
@@ -441,8 +442,26 @@ var WebGL = (function(){
 
             this.whiteSharkList.push(shark);
         
-            //this.shark.goDown();    
+            //this.shark.goDown();
         }
+    };
+
+    WebGL.prototype.addUser = function () {
+        this.barqueUser = new Barque();
+        this.avatarUser = new Bob();
+        this.barqueUser.add(this.avatarUser);
+
+        scene.add(this.barqueUser);
+    };
+
+    WebGL.prototype.addNewUser = function () {
+        var barqueUser = new Barque();
+        var avatarUser = new Bob();
+        barqueUser.add(avatarUser);
+
+        scene.add(barqueUser);
+
+        return barqueUser;
     };
 
     WebGL.prototype.addRadeau = function () {
@@ -533,14 +552,13 @@ var WebGL = (function(){
     },
 
     WebGL.prototype.render = function () {
+        this.countFrameToSendAPI -= 1;
         this.water.material.uniforms.time.value += 1.5 / 60.0;
         
-        this.controls.update();
+        // this.controls.update();
+        this.OrbitControls.update();
         
         // this.camera.position.x += 2;
-
-        // this.barque.position.z += 2;
-        // this.barque.rotation.y += 0.01;
 
         // move sharks
         for (var i = 0; i < this.whiteSharkList.length; i += 1) {
@@ -550,21 +568,30 @@ var WebGL = (function(){
         // this.aircraftCarrier.move();
         this.radeau.move();
 
+        this.userChange = false;
+
         if(this.controlledObj.movingForward){
+            this.userChange = true;
             this.controlledObj.translateZ(4);
         }
         else if(this.controlledObj.movingBackward) {
+            this.userChange = true;
             this.controlledObj.translateZ(-4);
         }
 
         if(this.controlledObj.rotatingLeft){
+            this.userChange = true;
             this.controlledObj.rotation.y += 0.02;
         }
         else if(this.controlledObj.rotatingRight) {
+            this.userChange = true;
             this.controlledObj.rotation.y -= 0.02;
         }
 
-        
+        if(this.userChange && this.countFrameToSendAPI < 0){
+            this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
+            this.updateAPI();
+        }
 
         this.display();
     },
@@ -574,6 +601,132 @@ var WebGL = (function(){
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(inWidth, inHeight);
         this.display();
+    }
+
+
+    WebGL.prototype.firebaseInit = function () {
+
+        var self = this;
+
+        this.fbRef = new Firebase('https://bob-ocean.firebaseio.com');
+        this.fbUsers = this.fbRef.child('users');
+
+        this.fbUserRef = this.fbUsers.push();
+        this.fbUserRef.set({
+            name: '',
+            position : {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+            rotation : {
+                x: 0,
+                y: 0,
+                z: 0
+            }
+        });
+        // We've appended a new message to the message_list location.
+        // var path = this.fbUserRef.toString();
+
+        this.fbUserRefKey = this.fbUserRef.toString().replace('https://bob-ocean.firebaseio.com/users/', '');
+
+        // fb.set({ name: "Alex Wolfe" });
+
+        // console.log(this.fbRef.child('users'));
+
+        // debugger;
+
+        // this.fbUsers.on('value', function(snapshot) {
+        //     console.log('update', snapshot.val());
+        // });
+
+        // this.fbUsers.on('child_added', function(user) {
+            
+        //     var userKey = user.name();
+
+        //     if(userKey === self.fbUserRefKey){
+        //         console.info('it same user');
+        //         return false;
+        //     }
+
+        //     var userVal = user.val();
+
+        //     console.info(userVal);
+
+        //     self.usersList[userKey] = {};
+        //     self.usersList[userKey].obj = self.addNewUser();
+
+        //     // self.usersList[userKey].api = userVal;
+        //     self.usersList[userKey].obj.position.x = userVal.position.x;
+        //     self.usersList[userKey].obj.position.y = userVal.position.y;
+        //     self.usersList[userKey].obj.position.z = userVal.position.z;
+
+        //     self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
+        //     self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
+        //     self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
+        // });
+
+        this.fbUsers.on('child_added', function (user) {
+
+            var userKey = user.name();
+
+            if(user.name() === self.fbUserRefKey){
+                console.info('it same user added');
+                return false;
+            }
+
+            var userVal = user.val();
+
+            self.usersList[userKey] = {};
+            // self.usersList[userKey].api = user.val();
+            self.usersList[userKey].obj = self.addNewUser();
+            self.usersList[userKey].obj.position.x = userVal.position.x;
+            self.usersList[userKey].obj.position.y = userVal.position.y;
+            self.usersList[userKey].obj.position.z = userVal.position.z;
+
+            self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
+            self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
+            self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
+        });
+
+        this.fbUsers.on('child_changed', function (user) {
+
+            var userKey = user.name();
+
+            if(userKey === self.fbUserRefKey){
+                console.info('it same user 33');
+                return false;
+            }
+
+            var userVal = user.val();
+
+            // self.usersList[userKey].api = userVal;
+            self.usersList[userKey].obj.position.x = userVal.position.x;
+            self.usersList[userKey].obj.position.y = userVal.position.y;
+            self.usersList[userKey].obj.position.z = userVal.position.z;
+
+            self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
+            self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
+            self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
+        });
+
+    };
+
+    WebGL.prototype.updateAPI = function () {
+        // console.log('send to API');
+
+        this.fbUserRef.update({
+            position: {    
+                x: this.barqueUser.position.x,
+                y: this.barqueUser.position.y,
+                z: this.barqueUser.position.z
+            },
+            rotation: {    
+                x: this.barqueUser.rotation.x,
+                y: this.barqueUser.rotation.y,
+                z: this.barqueUser.rotation.z
+            }
+        });
     }
 
     return WebGL;

@@ -11,6 +11,8 @@ var Barque = (function (){
 
 		this.add(obj);
 
+		this.position.set(helper.randomNumber(-500, 500), 0, helper.randomNumber(-500, 500));
+
 	}
 
 	Barque.prototype = new THREE.Object3D();
