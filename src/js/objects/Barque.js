@@ -4,7 +4,7 @@ var Barque = (function (){
 
 		THREE.Object3D.call(this);
 
-		var obj = modelsList['Barque'].collada.scene.children[0].clone();
+		var obj = JSONObj['Barque'].obj.clone();
 		
 		obj.position.set(0, 0, 0);
 		obj.scale.set(5, 5, 5);
@@ -21,3 +21,4 @@ var Barque = (function (){
 	return Barque;
 
 })();
+

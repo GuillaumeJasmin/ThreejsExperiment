@@ -10,9 +10,9 @@ var modelsList = {
     'Radeau': {
         file: 'radeau.dae'
     },
-    'Barque': {
-        file: 'barque.dae'
-    },
+    // 'Barque': {
+    //     file: 'barque.dae'
+    // },
     'Rondoudou': {
         file: 'rondoudou.dae'
     }
@@ -25,6 +25,18 @@ var OBJList = {
         imgFile: 'Aircraft/Acft Carrier Top.jpg'
     }
 };
+
+var JSONObj = {
+    'Barque': {
+        file: 'Barque/OldBoat.json'
+    },
+    'Bob': {
+        file: 'Bob/Bob.json'
+    },
+    'Aircraft': {
+        file: 'Aircraft.json'
+    }
+}
 
 var keyCode = {
     '38': 'top',
@@ -214,6 +226,14 @@ var WebGL = (function(){
             }
         }
 
+        this.JSONLoader = new THREE.JSONLoader();
+
+        for(var modelName in JSONObj) {
+            if (JSONObj.hasOwnProperty(modelName)) {
+                this.loadJSONModel(modelName);
+            }
+        }
+
     };
 
     /**
@@ -259,9 +279,35 @@ var WebGL = (function(){
     }
 
     /**
+     *
+     */
+    WebGL.prototype.loadJSONModel = function (modelName) {
+        var self = this;
+
+         // JSON
+        this.JSONLoader.load('assets/models/' + JSONObj[modelName].file, function( geometry, materials ){
+
+                // Remove smoothing to shader
+                for( var mat = 0, length = materials.length; mat < length; mat++ ){
+                    materials[mat].shading = THREE.FlatShading;
+                };
+
+                var obj = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+                obj.name = "barque";
+                obj.animated = false;
+
+                JSONObj[modelName].obj = obj
+
+                self.modelLoaded();
+        });
+
+
+    }
+
+    /**
      * @return void
      */
-    WebGL.prototype.modelLoaded = _.after((_.size(modelsList) + _.size(OBJList) * 2), function () {
+    WebGL.prototype.modelLoaded = _.after((_.size(modelsList) + _.size(OBJList) * 2 + _.size(JSONObj)), function () {
         this.onModelsLoaded();
     });
 
@@ -274,19 +320,21 @@ var WebGL = (function(){
 
         // this.addAircraftCarrier();
         
-        // this.addWhiteSHark();
+        this.addWhiteSHark();
 
         this.addBarque();
+        
+        this.addBob();
         this.addPatrick();
         
-        // this.addRadeau();
-        // this.addRondoudou();
+        this.addRadeau();
+        this.addRondoudou();
 
         // camera focus
         // this.cameraOnAircraftCarrier();
         // this.cameraOnPatrick();
         // this.cameraOnWhiteShark();
-        // this.cameraOnBarque();
+        this.cameraOnBarque();
 
         this.controlledObj = this.barque;
 
@@ -359,15 +407,15 @@ var WebGL = (function(){
     };
 
     WebGL.prototype.cameraOnPatrick  = function () {
-        this.patrick.obj.add(this.camera);
+        this.patrick.add(this.camera);
         this.camera.position.set(0, 0, -20);
-        //this.camera.rotation.set(0.4, 0, 0);
+        // this.camera.rotation.set(0.4, 0, 0);
     };
 
     WebGL.prototype.cameraOnBarque  = function () {
-        this.barque.obj.add(this.camera);
-        this.camera.position.set(0, 0, -20);
-        //this.camera.rotation.set(0.4, 0, 0);
+        this.barque.add(this.camera);
+        this.camera.position.set(0, 100, -300);
+        // this.camera.rotation.set(1, 0, 0);
     };
 
     WebGL.prototype.cameraOnWhiteShark  = function () {
@@ -387,6 +435,10 @@ var WebGL = (function(){
                 randomPosition: true
             });
 
+            shark.rotation.y = helper.getRandomAngle();
+
+            scene.add(shark);
+
             this.whiteSharkList.push(shark);
         
             //this.shark.goDown();    
@@ -395,6 +447,11 @@ var WebGL = (function(){
 
     WebGL.prototype.addRadeau = function () {
         this.radeau = new Radeau();
+
+        this.radeau.position.x = -500;
+        this.radeau.rotation.y = helper.getRandomAngle();
+
+        scene.add(this.radeau);
     };
 
     WebGL.prototype.addBarque = function () {
@@ -405,12 +462,19 @@ var WebGL = (function(){
 
     WebGL.prototype.addPatrick = function () {
         this.patrick = new Patrick();
-        this.barque.add(this.patrick);
+        this.patrick.position.z = -50;
+        this.barque.add(this.patrick);    
+    };
+
+    WebGL.prototype.addBob = function () {
+        this.bob = new Bob();
+        this.barque.add(this.bob);        
     };
 
     WebGL.prototype.addRondoudou = function () {
         this.rondoudou = new Rondoudou();
-        this.radeau.obj.add(this.rondoudou.obj);
+        this.rondoudou.position.z = -40;
+        this.radeau.add(this.rondoudou);
     };
 
     WebGL.prototype.newParticule = function () {
@@ -479,12 +543,12 @@ var WebGL = (function(){
         // this.barque.rotation.y += 0.01;
 
         // move sharks
-        // for (var i = 0; i < this.whiteSharkList.length; i += 1) {
-        //     this.whiteSharkList[i].move();
-        // }
+        for (var i = 0; i < this.whiteSharkList.length; i += 1) {
+            this.whiteSharkList[i].move();
+        }
 
         // this.aircraftCarrier.move();
-        // this.radeau.move();
+        this.radeau.move();
 
         if(this.controlledObj.movingForward){
             this.controlledObj.translateZ(4);
