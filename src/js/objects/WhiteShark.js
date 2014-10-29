@@ -8,7 +8,7 @@ var WhiteShark = function (params) {
     this.vit = 2;
     this.timeBeforeChangeDirection = this._getTimeBeforeChangeDirection();
     this.timeDuringChangeDirection = this._getTimeDuringChangeDirection();
-    this.directionY = this._getRandomDirection();
+    this.directionY = helper.getRandomDirection();
     
     if(!modelsList['WhiteShark'].obj){
         console.error('No collada for WhiteShark');
@@ -86,7 +86,7 @@ WhiteShark.prototype.changeDirection = function() {
         if(this.timeBeforeChangeDirection < -this.timeDuringChangeDirection){
             this.timeBeforeChangeDirection = this._getTimeBeforeChangeDirection();
             this.timeDuringChangeDirection = this._getTimeDuringChangeDirection();
-            this.directionY = this._getRandomDirection();
+            this.directionY = helper.getRandomDirection();
         }
     }
 
@@ -106,13 +106,6 @@ WhiteShark.prototype._getTimeBeforeChangeDirection = function () {
  */
 WhiteShark.prototype._getTimeDuringChangeDirection = function () {
     return Math.round(helper.randomNumber(0, 300));
-}
-
-/**
- * @return 1 or -1
- */
-WhiteShark.prototype._getRandomDirection = function () {
-    return (Math.round(helper.randomNumber(1, 0)) ? 1 : -1);
 }
 
 

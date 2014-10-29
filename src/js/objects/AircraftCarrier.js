@@ -4,7 +4,7 @@ var AircraftCarrier = function (params) {
         this.vit = 2;
         this.timeBeforeChangeDirection = this._getTimeBeforeChangeDirection();
         this.timeDuringChangeDirection = this._getTimeDuringChangeDirection();
-        this.directionY = this._getRandomDirection();
+        this.directionY = helper.getRandomDirection();
 
         this.obj = OBJList['AircraftCarrier'].obj.clone();
         this.obj.position.y = 1;
@@ -47,7 +47,7 @@ AircraftCarrier.prototype._changeDirection = function() {
         if(this.timeBeforeChangeDirection < -this.timeDuringChangeDirection){
             this.timeBeforeChangeDirection = this._getTimeBeforeChangeDirection();
             this.timeDuringChangeDirection = this._getTimeDuringChangeDirection();
-            this.directionY = this._getRandomDirection();
+            this.directionY = helper.getRandomDirection();
         }
     }
 
@@ -62,20 +62,4 @@ AircraftCarrier.prototype._getTimeBeforeChangeDirection = function () {
 AircraftCarrier.prototype._getTimeDuringChangeDirection = function () {
     return Math.round(helper.randomNumber(300, 600));
 }
-
-/**
- * @return 1 or -1
- */
-AircraftCarrier.prototype._getRandomDirection = function () {
-    return (Math.round(helper.randomNumber(1, 0)) ? 1 : -1);
-}
-
-
-
-// AircraftCarrier.prototype.stabilization = function() {
-//     if(this.obj.rotation.x > 0){
-//         this.isGoUp = true;
-//     }
-// };
-
 

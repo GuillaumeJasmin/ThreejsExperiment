@@ -20,11 +20,6 @@ function init(){
     });
     
     $('.three').append(webgl.renderer.domElement);
-    // $('window').on('keypress', function () {
-    //     console.log('aaa');
-    // });
-
-    
 
     gui = new dat.GUI();
     gui.close();

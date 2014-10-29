@@ -1,11 +1,23 @@
-var Patrick = function () {
-	
-	this.collada = modelsList['Patrick'].obj; 
-    this.obj = this.collada.scene.clone();
+var Patrick = (function (){
 
-	this.obj.position.set(0, 7, 0);
-    this.obj.scale.set(2, 2, 2);
+	function Patrick () {
 
-    // scene.add(this.obj);
-    //webgl.barque.add(this.obj);
-}
+		THREE.Object3D.call(this);
+
+		var obj = modelsList['Patrick'].collada.scene.children[0].clone();
+		
+		obj.position.set(0, 35, 0);
+		obj.scale.set(10, 10, 10);
+
+		this.add(obj);
+
+	}
+
+	Patrick.prototype = new THREE.Object3D();
+    Patrick.prototype.constructor = Patrick;
+
+	_.merge(Patrick.prototype, MoveControl.prototype);
+
+	return Patrick;
+
+})();

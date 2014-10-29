@@ -5,10 +5,10 @@ var sourcemaps = require('gulp-sourcemaps');
 var watch = require('gulp-watch');
 
 gulp.task('javascript', function() {
-    gulp.src('src/js/**/*.js')
+    gulp.src('src/js/base/*.js','src/js/objects/*.js','src/js/*.js')
         .pipe(sourcemaps.init({loadMaps: true}))
             .pipe(concat('app.min.js'))
-            /*.pipe(uglify())*/
+            // .pipe(uglify())
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('build'));
 });

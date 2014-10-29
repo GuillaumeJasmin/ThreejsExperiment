@@ -12,6 +12,9 @@ var modelsList = {
     },
     'Barque': {
         file: 'barque.dae'
+    },
+    'Rondoudou': {
+        file: 'rondoudou.dae'
     }
 };
 
@@ -117,19 +120,19 @@ var WebGL = (function(){
 
         switch(keyCode[event.keyCode]){
             case 'top':
-                this.startForward();
+                this.controlledObj.startForward();
                 break;
 
             case 'bottom':
-                this.startBackward();
+                this.controlledObj.startBackward();
                 break;
 
             case 'left':
-                this.startRotationLeft();
+                this.controlledObj.startRotationLeft();
                 break;
 
             case 'right':
-                this.startRotationRight();
+                this.controlledObj.startRotationRight();
                 break;
 
             default:
@@ -147,19 +150,19 @@ var WebGL = (function(){
 
         switch(keyCode[event.keyCode]){
             case 'top':
-                this.stopForward();
+                this.controlledObj.stopForward();
                 break;
 
             case 'bottom':
-                this.stopBackward();
+                this.controlledObj.stopBackward();
                 break;
 
             case 'left':
-                this.stopRotationLeft();
+                this.controlledObj.stopRotationLeft();
                 break;
 
             case 'right':
-                this.stopRotationRight();
+                this.controlledObj.stopRotationRight();
                 break;
 
             default:
@@ -169,54 +172,6 @@ var WebGL = (function(){
 
     };
 
-    WebGL.prototype.startForward = function (event) {
-        if(this.movingForward){
-            return false;
-        }
-
-        this.movingForward = true;
-    };
-
-    WebGL.prototype.stopForward = function (event) {
-        this.movingForward = false;
-    };
-
-    WebGL.prototype.startBackward = function (event) {
-        if(this.movingBackward){
-            return false;
-        }
-
-        this.movingBackward = true;
-    };
-
-    WebGL.prototype.stopBackward = function (event) {
-        this.movingBackward = false;
-    };
-
-
-    WebGL.prototype.startRotationLeft = function (event) {
-        if(this.rotatingLeft){
-            return false;
-        }
-
-        this.rotatingLeft = true;
-    };
-
-    WebGL.prototype.stopRotationLeft = function (event) {
-        this.rotatingLeft = false;
-    };
-
-    WebGL.prototype.startRotationRight = function (event) {
-        if(this.rotatingRight){
-            return false;
-        }
-
-        this.rotatingRight = true;
-    };
-
-    WebGL.prototype.stopRotationRight = function (event) {
-        this.rotatingRight = false;
-    };
 
     /**
      * @return void
@@ -269,7 +224,7 @@ var WebGL = (function(){
         var self = this;
 
         this.loader.load('assets/models/' + modelsList[modelName].file, function (collada) {
-            modelsList[modelName].obj = collada;
+            modelsList[modelName].collada = collada;
             self.modelLoaded();
         });
     }
@@ -315,15 +270,25 @@ var WebGL = (function(){
      */
     WebGL.prototype.onModelsLoaded = function () {
 
-        this.addAircraftCarrier();
+        console.log('modelsList', modelsList);
+
+        // this.addAircraftCarrier();
+        
+        // this.addWhiteSHark();
+
         this.addBarque();
         this.addPatrick();
-        this.addWhiteSHark();
-        this.addRadeau();
         
+        // this.addRadeau();
+        // this.addRondoudou();
+
         // camera focus
         // this.cameraOnAircraftCarrier();
-        this.cameraOnPatrick();
+        // this.cameraOnPatrick();
+        // this.cameraOnWhiteShark();
+        // this.cameraOnBarque();
+
+        this.controlledObj = this.barque;
 
         this.params.onModelsLoaded();
     };
@@ -399,6 +364,20 @@ var WebGL = (function(){
         //this.camera.rotation.set(0.4, 0, 0);
     };
 
+    WebGL.prototype.cameraOnBarque  = function () {
+        this.barque.obj.add(this.camera);
+        this.camera.position.set(0, 0, -20);
+        //this.camera.rotation.set(0.4, 0, 0);
+    };
+
+    WebGL.prototype.cameraOnWhiteShark  = function () {
+        this.whiteSharkList[0].obj.add(this.camera);
+        this.camera.position.set(0, 0, -20);
+        //this.camera.rotation.set(0.4, 0, 0);
+    };
+
+    
+
     WebGL.prototype.addWhiteSHark = function () {
 
         this.whiteSharkList = [];
@@ -420,14 +399,19 @@ var WebGL = (function(){
 
     WebGL.prototype.addBarque = function () {
         this.barque = new Barque();
+        scene.add(this.barque);
     };
 
 
     WebGL.prototype.addPatrick = function () {
         this.patrick = new Patrick();
-        this.barque.obj.add(this.patrick.obj);
+        this.barque.add(this.patrick);
     };
 
+    WebGL.prototype.addRondoudou = function () {
+        this.rondoudou = new Rondoudou();
+        this.radeau.obj.add(this.rondoudou.obj);
+    };
 
     WebGL.prototype.newParticule = function () {
         var self = this;
@@ -495,24 +479,25 @@ var WebGL = (function(){
         // this.barque.rotation.y += 0.01;
 
         // move sharks
-        for (var i = 0; i < this.whiteSharkList.length; i += 1) {
-            this.whiteSharkList[i].move();
+        // for (var i = 0; i < this.whiteSharkList.length; i += 1) {
+        //     this.whiteSharkList[i].move();
+        // }
+
+        // this.aircraftCarrier.move();
+        // this.radeau.move();
+
+        if(this.controlledObj.movingForward){
+            this.controlledObj.translateZ(4);
+        }
+        else if(this.controlledObj.movingBackward) {
+            this.controlledObj.translateZ(-4);
         }
 
-        this.aircraftCarrier.move();
-
-        if(this.movingForward){
-            this.barque.obj.translateZ(4);
+        if(this.controlledObj.rotatingLeft){
+            this.controlledObj.rotation.y += 0.02;
         }
-        else if(this.movingBackward) {
-            this.barque.obj.translateZ(-4);
-        }
-
-        if(this.rotatingLeft){
-            this.barque.obj.rotation.y += 0.02;
-        }
-        else if(this.rotatingRight) {
-            this.barque.obj.rotation.y -= 0.02;
+        else if(this.controlledObj.rotatingRight) {
+            this.controlledObj.rotation.y -= 0.02;
         }
 
         
