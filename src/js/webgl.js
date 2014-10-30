@@ -460,7 +460,7 @@ var WebGL = (function(){
    
         if(this.userChange && this.countFrameToSendAPI < 0){
             this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
-            //this.updateAPI();
+            this.updateAPI();
         }    
 
         // this.updateSocket();
@@ -527,6 +527,10 @@ var WebGL = (function(){
     };
 
 
+    /**
+     * @return void
+     * async
+     */
     WebGL.prototype.firebaseInit = function () {
 
         var self = this;
@@ -600,6 +604,9 @@ var WebGL = (function(){
 
     };
 
+    /**
+     * @return void
+     */
     WebGL.prototype.updateAPI = function () {
         this.fbUserRef.update({
             position: {    
@@ -615,6 +622,9 @@ var WebGL = (function(){
         });
     }
 
+    /**
+     * @return void
+     */
     WebGL.prototype.updateSocket = function () {
         socket.emit('userUpdate', {
             position: {
@@ -630,6 +640,9 @@ var WebGL = (function(){
         });
     };
 
+    /**
+     * @return void
+     */
     WebGL.prototype.checkRondoudou = function () {
         if(Math.abs(this.barqueUser.position.x - this.radeau.position.x) < 300){
             if(Math.abs(this.barqueUser.position.z - this.radeau.position.z) < 300){
@@ -637,7 +650,10 @@ var WebGL = (function(){
             }
         }
     }
-
+    
+    /**
+     * @return void
+     */
     WebGL.prototype.startRondoudouSound = function () {
         if(this.rondoudouIsPlaying){
             return false;
