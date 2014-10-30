@@ -13,15 +13,32 @@ var webgl, gui, helper;
 $(document).ready(init);
 
 function init(){
+    $('#bob').on('click', function (){
+        $('.loading').removeClass('hidden');
+        $('.choose-avatar').addClass('hidden');
+        initWebGL('Bob');
+    });
+
+    $('#patrick').on('click', function (){
+        $('.loading').removeClass('hidden');
+        $('.choose-avatar').addClass('hidden');
+        initWebGL('Patrick');
+    });
+
+
+
+}
+
+function initWebGL(avatar){
     helper = new Helper();
-    webgl = new WebGL(window.innerWidth, window.innerHeight);
-    var onThreeReady = _.after(2, animate);
+    webgl = new WebGL({
+        avatar: avatar
+    });
+    var onThreeReady = _.after(2, startAnimate);
     
     webgl.initialize({
         onModelsLoaded: onThreeReady
     });
-    
-    $('.three').append(webgl.renderer.domElement);
 
     gui = new dat.GUI();
     gui.close();
@@ -30,6 +47,14 @@ function init(){
 
     onThreeReady();
     
+}
+
+function startAnimate () {
+    setTimeout(function () {
+        $('.loading').addClass('hidden');
+        $('.three').append(webgl.renderer.domElement);
+        animate();
+    }, 1000);
 }
 
 function resizeHandler() {

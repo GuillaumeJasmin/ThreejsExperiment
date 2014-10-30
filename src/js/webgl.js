@@ -51,7 +51,9 @@ var keyCode = {
 
 var WebGL = (function(){
     
-    function WebGL (){
+    function WebGL (params){
+        this.params = params;
+        this.avatar = this.params.avatar;
         this.renderer = null;
         this.camera = null; 
         this.scene = null; 
@@ -62,6 +64,9 @@ var WebGL = (function(){
         this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
         this.lastUserInfo = {};
         this.usersList = [];
+
+        // WebGL.prototype.startRondoudouSound();
+
     };
 
 
@@ -82,7 +87,18 @@ var WebGL = (function(){
 
         var self = this;
 
+        $('#rondoudou-sound').on('ended', function() {
+           $('#rondoudou-sound')[0].load();
+           self.rondoudouIsPlaying = false;
+        });
+
+        this.startLoading();
+
+        var self = this;
+
         this.params = params;
+
+        this.loadModels();
         
         // Initialize Renderer, Camera and Scene
         this.renderer = this.enable? new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
@@ -109,21 +125,17 @@ var WebGL = (function(){
             betaVersion: 0,
             side: THREE.DoubleSide
         });
-        var aMeshMirror = new THREE.Mesh(
+        this.aMeshMirror = new THREE.Mesh(
             new THREE.PlaneGeometry(900000, 900000, 100, 100), 
             this.water.material
         );
 
-        aMeshMirror.add(this.water);
-        aMeshMirror.rotation.x = - Math.PI * 0.5;
-        
-        this.scene.add(aMeshMirror);
+        this.aMeshMirror.add(this.water);
+        this.aMeshMirror.rotation.x = - Math.PI * 0.5;
 
         this.loadSkyBox();
 
         this.resize(window.innerWidth, window.innerHeight);
-
-        this.loadModels();
 
         window.addEventListener('keydown', function (event) {self.onKeydown(event)}, false);
         window.addEventListener('keyup', function (event) {self.onKeyup(event)}, false);
@@ -182,6 +194,13 @@ var WebGL = (function(){
 
     };
 
+    WebGL.prototype.stopLoading = function () {
+
+    };
+
+    WebGL.prototype.startLoading = function () {
+
+    };
 
     /**
      * @return void
@@ -314,7 +333,10 @@ var WebGL = (function(){
      */
     WebGL.prototype.onModelsLoaded = function () {
 
-        // this.addAircraftCarrier();
+        this.addAircraftCarrier();
+
+        this.scene.add(this.aMeshMirror);
+        this.scene.add(this.aSkybox);
         
         this.addWhiteSHark();
 
@@ -327,7 +349,7 @@ var WebGL = (function(){
         this.addRondoudou();
 
         // user
-        this.addUser();
+        this.addUser(this.avatar);
         this.barqueUser.add(this.camera);
         this.controlledObj = this.barqueUser;
         this.camera.position.set(0, 100, -300);
@@ -343,6 +365,8 @@ var WebGL = (function(){
         // this.controlledObj = this.barque;
 
         this.params.onModelsLoaded();
+
+        this.stopLoading();
     };
 
     WebGL.prototype.addCameras = function () {
@@ -434,7 +458,7 @@ var WebGL = (function(){
 
         this.whiteSharkList = [];
 
-        for (var i = 0; i < 1; i += 1) {    
+        for (var i = 0; i < 10; i += 1) {    
             var shark = new WhiteShark({
                 randomPosition: true
             });
@@ -449,9 +473,16 @@ var WebGL = (function(){
         }
     };
 
-    WebGL.prototype.addUser = function () {
+    WebGL.prototype.addUser = function (avatar) {
+
+        if(avatar === 'Bob'){
+            this.avatarUser = new Bob();
+        }
+        else if (avatar === 'Patrick'){
+            this.avatarUser = new Patrick();
+        }
+
         this.barqueUser = new Barque();
-        this.avatarUser = new Bob();
         this.barqueUser.add(this.avatarUser);
 
         scene.add(this.barqueUser);
@@ -532,6 +563,8 @@ var WebGL = (function(){
 
     WebGL.prototype.loadSkyBox = function loadSkyBox() {
 
+        var self = this;
+
         var box = 'box-lakel';        
         var aCubeMap = THREE.ImageUtils.loadTextureCube([
           'assets/img/' + box + '/west.jpg',
@@ -554,12 +587,11 @@ var WebGL = (function(){
           side: THREE.BackSide
         });
 
-        var aSkybox = new THREE.Mesh(
+        self.aSkybox = new THREE.Mesh(
           new THREE.CubeGeometry(1000000, 1000000, 1000000),
           aSkyBoxMaterial
         );
-        
-        this.scene.add(aSkybox);
+    
     };
 
     WebGL.prototype.display = function () {
@@ -569,7 +601,7 @@ var WebGL = (function(){
 
     WebGL.prototype.render = function () {
         this.countFrameToSendAPI -= 1;
-        //this.water.material.uniforms.time.value += 1.5 / 60.0;
+        this.water.material.uniforms.time.value += 1.5 / 60.0;
         
         // this.controls.update();
         this.OrbitControls.update();
@@ -577,12 +609,12 @@ var WebGL = (function(){
         // this.camera.position.x += 2;
 
         // move sharks
-        // for (var i = 0; i < this.whiteSharkList.length; i += 1) {
-        //     this.whiteSharkList[i].move();
-        // }
+        for (var i = 0; i < this.whiteSharkList.length; i += 1) {
+            this.whiteSharkList[i].move();
+        }
 
-        // this.aircraftCarrier.move();
-        //this.radeau.move();
+        this.aircraftCarrier.move();
+        this.radeau.move();
 
         this.userChange = false;
 
@@ -604,11 +636,13 @@ var WebGL = (function(){
             this.controlledObj.rotation.y -= 0.02;
         }
 
-        if(this.userChange && this.countFrameToSendAPI < 0){
-            this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
-            // this.updateAPI();
-            // this.updateSocket();
-        }
+        this.checkRondoudou();
+
+        // if(this.userChange && this.countFrameToSendAPI < 0){
+        //     // this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
+        //     // this.updateAPI();
+        //     // this.updateSocket();
+        // }
 
         this.display();
     },
@@ -620,10 +654,12 @@ var WebGL = (function(){
         this.display();
     }
 
+
     WebGL.prototype.initSocket = function () {
         var self = this;
 
-        socket = io.connect('http://localhost:9003');
+        socket = io.connect('http://guillaume.local:9003');
+
 
         socket.on('newUser', function(data) {
             self.usersList[data.userKey] = {
@@ -779,6 +815,27 @@ var WebGL = (function(){
                 z: this.barqueUser.rotation.z
             }
         });
+    };
+
+    WebGL.prototype.checkRondoudou = function () {
+        if(Math.abs(this.barqueUser.position.x - this.radeau.position.x) < 300){
+            if(Math.abs(this.barqueUser.position.z - this.radeau.position.z) < 300){
+                this.startRondoudouSound();
+            }
+        }
+    }
+
+    WebGL.prototype.startRondoudouSound = function () {
+        if(this.rondoudouIsPlaying){
+            return false;
+        }
+
+        console.log('play rondoudou');
+
+        this.rondoudouIsPlaying = true;
+        $('#rondoudou-sound')[0].play();
+
+
     };
 
     return WebGL;

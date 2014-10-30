@@ -2,6 +2,9 @@ var io = require('socket.io').listen(9003);
 // var EE = require('events').EventEmitter;
 // var pubsub = new EE();
 
+// io.set('heartbeat interval', 5);
+// io.set('heartbeat timeout', 11);
+
 var userList = {};
 var increment = 0;
 var user;

@@ -7,9 +7,26 @@
 </head>
 <body>	
     <div class="three"></div>
+
+    <div class="loading hidden"></div>
+
+    <section class="choose-avatar">
+
+        <div class="choose-title">Choose your avatar</div>
+    
+        <img src="assets/img/bob.jpg" class="avatar" id="bob" alt="" height="300">
+        <img src="assets/img/patrick.png" class="avatar" id="patrick" alt="" height="300">
+
+    </section>
+
+    <audio preload="auto" id="rondoudou-sound">
+        <source src="assets/rondoudou.mp3" type="audio/mpeg"></source>
+    </audio>
+
+
     <div id="canvas-3d" class="viewer"></div>
     <script src="https://cdn.firebase.com/js/client/1.1.3/firebase.js"></script>
-    <script src="http://localhost:9003/socket.io/socket.io.js"></script>
+    <!-- <script src="http://guillaume.local:9003/socket.io/socket.io.js"></script> -->
     <script src="assets/lib/dat-gui/build/dat.gui.min.js"></script>
 	<script src="assets/lib/jquery/dist/jquery.min.js"></script>
     <script src="assets/lib/greensock/src/minified/TweenMax.min.js"></script>
@@ -20,3 +37,6 @@
     <script src="build/app.min.js"></script>
 </body>
 </html>
+
+
+
