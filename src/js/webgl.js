@@ -1,3 +1,5 @@
+var socket;
+
 var scene;
 
 var modelsList = {
@@ -75,7 +77,8 @@ var WebGL = (function(){
 
     WebGL.prototype.initialize = function (params) {
 
-        this.firebaseInit();
+        // this.firebaseInit();
+        // this.initSocket();
 
         var self = this;
 
@@ -431,7 +434,7 @@ var WebGL = (function(){
 
         this.whiteSharkList = [];
 
-        for (var i = 0; i < 6; i += 1) {    
+        for (var i = 0; i < 1; i += 1) {    
             var shark = new WhiteShark({
                 randomPosition: true
             });
@@ -452,6 +455,19 @@ var WebGL = (function(){
         this.barqueUser.add(this.avatarUser);
 
         scene.add(this.barqueUser);
+
+        // socket.emit('newUser', {
+        //     position: {
+        //         x: this.barqueUser.position.x,
+        //         y: this.barqueUser.position.y,
+        //         z: this.barqueUser.position.z
+        //     },
+        //     rotation: {
+        //         x: this.barqueUser.rotation.x,
+        //         y: this.barqueUser.rotation.y,
+        //         z: this.barqueUser.rotation.z
+        //     }
+        // });
     };
 
     WebGL.prototype.addNewUser = function () {
@@ -553,7 +569,7 @@ var WebGL = (function(){
 
     WebGL.prototype.render = function () {
         this.countFrameToSendAPI -= 1;
-        this.water.material.uniforms.time.value += 1.5 / 60.0;
+        //this.water.material.uniforms.time.value += 1.5 / 60.0;
         
         // this.controls.update();
         this.OrbitControls.update();
@@ -561,12 +577,12 @@ var WebGL = (function(){
         // this.camera.position.x += 2;
 
         // move sharks
-        for (var i = 0; i < this.whiteSharkList.length; i += 1) {
-            this.whiteSharkList[i].move();
-        }
+        // for (var i = 0; i < this.whiteSharkList.length; i += 1) {
+        //     this.whiteSharkList[i].move();
+        // }
 
         // this.aircraftCarrier.move();
-        this.radeau.move();
+        //this.radeau.move();
 
         this.userChange = false;
 
@@ -590,7 +606,8 @@ var WebGL = (function(){
 
         if(this.userChange && this.countFrameToSendAPI < 0){
             this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
-            this.updateAPI();
+            // this.updateAPI();
+            // this.updateSocket();
         }
 
         this.display();
@@ -602,6 +619,60 @@ var WebGL = (function(){
         this.renderer.setSize(inWidth, inHeight);
         this.display();
     }
+
+    WebGL.prototype.initSocket = function () {
+        var self = this;
+
+        socket = io.connect('http://localhost:9003');
+
+        socket.on('newUser', function(data) {
+            self.usersList[data.userKey] = {
+                obj: null
+            };
+            self.usersList[data.userKey].obj = self.addNewUser();
+            self.usersList[data.userKey].obj.position.x = data.data.position.x;
+            self.usersList[data.userKey].obj.position.y = data.data.position.y;
+            self.usersList[data.userKey].obj.position.z = data.data.position.z;
+            self.usersList[data.userKey].obj.rotation.x = data.data.rotation.x;
+            self.usersList[data.userKey].obj.rotation.y = data.data.rotation.y;
+            self.usersList[data.userKey].obj.rotation.z = data.data.rotation.z;
+        });
+
+        socket.on('userUpdate', function (data) {
+            console.log('userUpdate', data);
+            self.usersList[data.userKey].obj.position.x = data.data.position.x;
+            self.usersList[data.userKey].obj.position.y = data.data.position.y;
+            self.usersList[data.userKey].obj.position.z = data.data.position.z;
+            self.usersList[data.userKey].obj.rotation.x = data.data.rotation.x;
+            self.usersList[data.userKey].obj.rotation.y = data.data.rotation.y;
+            self.usersList[data.userKey].obj.rotation.z = data.data.rotation.z;
+        });
+
+        socket.on('initOtherUser', function (data) {
+            
+
+            for(var userKey in data.users) {
+                console.log('--');
+                console.log('aa', userKey);
+                console.log('bb', data.myUserKey);
+                console.log('--');
+                if (data.users.hasOwnProperty(userKey) && userKey !== data.myUserKey) {
+                    self.usersList[userKey] = {
+                        obj: null
+                    };
+                    self.usersList[userKey].obj = self.addNewUser();
+                    self.usersList[userKey].obj.position.x = data.users[userKey].position.x;
+                    self.usersList[userKey].obj.position.y = data.users[userKey].position.y;
+                    self.usersList[userKey].obj.position.z = data.users[userKey].position.z;
+                    self.usersList[userKey].obj.rotation.x = data.users[userKey].rotation.x;
+                    self.usersList[userKey].obj.rotation.y = data.users[userKey].rotation.y;
+                    self.usersList[userKey].obj.rotation.z = data.users[userKey].rotation.z;
+               }
+            }
+        });
+
+        
+    };
 
 
     WebGL.prototype.firebaseInit = function () {
@@ -630,42 +701,6 @@ var WebGL = (function(){
 
         this.fbUserRefKey = this.fbUserRef.toString().replace('https://bob-ocean.firebaseio.com/users/', '');
 
-        // fb.set({ name: "Alex Wolfe" });
-
-        // console.log(this.fbRef.child('users'));
-
-        // debugger;
-
-        // this.fbUsers.on('value', function(snapshot) {
-        //     console.log('update', snapshot.val());
-        // });
-
-        // this.fbUsers.on('child_added', function(user) {
-            
-        //     var userKey = user.name();
-
-        //     if(userKey === self.fbUserRefKey){
-        //         console.info('it same user');
-        //         return false;
-        //     }
-
-        //     var userVal = user.val();
-
-        //     console.info(userVal);
-
-        //     self.usersList[userKey] = {};
-        //     self.usersList[userKey].obj = self.addNewUser();
-
-        //     // self.usersList[userKey].api = userVal;
-        //     self.usersList[userKey].obj.position.x = userVal.position.x;
-        //     self.usersList[userKey].obj.position.y = userVal.position.y;
-        //     self.usersList[userKey].obj.position.z = userVal.position.z;
-
-        //     self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
-        //     self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
-        //     self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
-        // });
-
         this.fbUsers.on('child_added', function (user) {
 
             var userKey = user.name();
@@ -677,7 +712,9 @@ var WebGL = (function(){
 
             var userVal = user.val();
 
-            self.usersList[userKey] = {};
+            self.usersList[userKey] = {
+                obj: null
+            };
             // self.usersList[userKey].api = user.val();
             self.usersList[userKey].obj = self.addNewUser();
             self.usersList[userKey].obj.position.x = userVal.position.x;
@@ -728,6 +765,21 @@ var WebGL = (function(){
             }
         });
     }
+
+    WebGL.prototype.updateSocket = function () {
+        socket.emit('userUpdate', {
+            position: {
+                x: this.barqueUser.position.x,
+                y: this.barqueUser.position.y,
+                z: this.barqueUser.position.z
+            },
+            rotation: {
+                x: this.barqueUser.rotation.x,
+                y: this.barqueUser.rotation.y,
+                z: this.barqueUser.rotation.z
+            }
+        });
+    };
 
     return WebGL;
 
