@@ -1,0 +1,36 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Manager</title>
+    <link rel="stylesheet" href="../styles/bootstrap.min.css">
+    <link rel="stylesheet" href="../styles/bootstrap-theme.min.css">
+
+    <style>
+
+        section {
+            margin: 20px;
+        }
+    
+    </style>
+    
+</head>
+<body>
+
+    <section>
+
+        <button id="remove-users" class="btn btn-primary">Remove Users</button>
+
+    </section>
+
+    <script src="https://cdn.firebase.com/js/client/1.1.3/firebase.js"></script>
+    <script>
+            var fbRef = new Firebase('https://bob-ocean.firebaseio.com');
+            var fbUsers = this.fbRef.child('users');
+
+            document.getElementById('remove-users').addEventListener('click', function () {
+                fbUsers.remove();                
+            });
+    </script>
+    
+</body>
+</html>

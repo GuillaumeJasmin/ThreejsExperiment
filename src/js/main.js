@@ -25,14 +25,14 @@ function init(){
         initWebGL('Patrick');
     });
 
-
-
 }
 
 function initWebGL(avatar){
     helper = new Helper();
+
     webgl = new WebGL({
-        avatar: avatar
+        avatar: avatar,
+        multiplayer: $('#multiplayer').is(':checked')
     });
     var onThreeReady = _.after(2, startAnimate);
     

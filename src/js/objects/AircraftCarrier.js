@@ -1,3 +1,6 @@
+/**
+ * @constructor AircraftCarrier
+ */
 var AircraftCarrier = function (params) {
 
         this.rotationX = 0;
@@ -12,6 +15,10 @@ var AircraftCarrier = function (params) {
         scene.add(this.obj);
 }
 
+/**
+ * @return void
+ * execute at render
+ */
 AircraftCarrier.prototype.move = function () {
 
     if(this.isGoDown && this.obj.rotation.x < 1){
@@ -24,18 +31,14 @@ AircraftCarrier.prototype.move = function () {
         this.rotationX = 0;
     }
 
-
     this._changeDirection();
-
-    // console.log(Math.round(helper.randomNumber(1, 0)));
-
-    // saute
-    // this.obj.rotation.x += this.rotationX;
     
     this.obj.translateZ(this.vit);
 }
 
-
+/**
+ * @return void
+ */
 AircraftCarrier.prototype._changeDirection = function() {
 
     if(this.timeBeforeChangeDirection < 0){
@@ -55,10 +58,16 @@ AircraftCarrier.prototype._changeDirection = function() {
     
 };
 
+/**
+ * @return int
+ */
 AircraftCarrier.prototype._getTimeBeforeChangeDirection = function () {
     return Math.round(helper.randomNumber(300, 500));
 }
 
+/**
+ * @return int
+ */
 AircraftCarrier.prototype._getTimeDuringChangeDirection = function () {
     return Math.round(helper.randomNumber(300, 600));
 }

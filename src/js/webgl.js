@@ -41,11 +41,7 @@ var keyCode = {
     '38': 'top',
     '40':'bottom',
     '37':'left',
-    '39':'right',
-    // '122': 'top',
-    // '115':'bottom',
-    // '113':'left',
-    // '100':'right'
+    '39':'right'
 };
 
 
@@ -60,13 +56,11 @@ var WebGL = (function(){
         this.controls = null;
         this.water = null;
         this.modelsPath = 'assets/models/';
-        this.countFrameToSendAPIInitial = 2;
+        this.countFrameToSendAPIInitial = 1;
         this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
         this.lastUserInfo = {};
         this.usersList = [];
-
-        // WebGL.prototype.startRondoudouSound();
-
+        this.multiplayer = this.params.multiplayer;
     };
 
 
@@ -82,7 +76,13 @@ var WebGL = (function(){
 
     WebGL.prototype.initialize = function (params) {
 
-        // this.firebaseInit();
+
+        // if(this.multiplayer){
+        //     // this.firebaseInit();
+        // }
+
+        this.firebaseInit();
+        
         // this.initSocket();
 
         var self = this;
@@ -92,7 +92,7 @@ var WebGL = (function(){
            self.rondoudouIsPlaying = false;
         });
 
-        this.startLoading();
+        $('#rondoudou-sound')[0].volume = 1;
 
         var self = this;
 
@@ -194,136 +194,10 @@ var WebGL = (function(){
 
     };
 
-    WebGL.prototype.stopLoading = function () {
-
-    };
-
-    WebGL.prototype.startLoading = function () {
-
-    };
 
     /**
      * @return void
-     * load .dae model
-     */
-    WebGL.prototype.loadModels = function () {
-
-        var self = this;
-
-        this.loader = new THREE.ColladaLoader();        
-        this.loader.options.convertUpAxis = true;
-
-        for(var modelName in modelsList) {
-           if (modelsList.hasOwnProperty(modelName)) {
-                this.loadColladaModel(modelName);
-           }
-        }
-
-        this.manager = new THREE.LoadingManager();
-        this.manager.onProgress = function ( item, loaded, total ) {
-            console.log( item, loaded, total );
-        };
-
-        this.OBJLoaderOnProgress = function ( xhr ) {
-            if ( xhr.lengthComputable ) {
-                var percentComplete = xhr.loaded / xhr.total * 100;
-                console.log( Math.round(percentComplete, 2) + '% downloaded' );
-            }
-        };
-
-
-        this.OBJLoaderOnError = function ( xhr ) {};
-
-        this.imgLoader = new THREE.ImageLoader(this.manager);
-        this.OBJLoader = new THREE.OBJLoader(this.manager);
-
-        for(var modelName in OBJList) {
-            if (OBJList.hasOwnProperty(modelName)) {
-                this.loadOBJModel(modelName);
-            }
-        }
-
-        this.JSONLoader = new THREE.JSONLoader();
-
-        for(var modelName in JSONObj) {
-            if (JSONObj.hasOwnProperty(modelName)) {
-                this.loadJSONModel(modelName);
-            }
-        }
-
-    };
-
-    /**
-     * return void
-     * async
-     */
-    WebGL.prototype.loadColladaModel = function (modelName) {
-        var self = this;
-
-        this.loader.load('assets/models/' + modelsList[modelName].file, function (collada) {
-            modelsList[modelName].collada = collada;
-            self.modelLoaded();
-        });
-    }
-
-    /**
-     * return void
-     * async
-     */
-    WebGL.prototype.loadOBJModel = function (modelName) {
-        var self = this;
-
-        var texture = new THREE.Texture();
-        this.imgLoader.load('assets/models/' + OBJList[modelName].imgFile, function (image) {
-            texture.image = image;
-            texture.needsUpdate = true;
-            self.modelLoaded();
-        });
-
-        
-        this.OBJLoader.load('assets/models/' + OBJList[modelName].objFile, function (object) {
-
-            OBJList[modelName].obj = object;
-            OBJList[modelName].obj.traverse( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
-                    child.material.map = texture;
-                }
-            });
-
-            self.modelLoaded();
-
-        }, this.OBJLoaderOnProgress, this.OBJLoaderOnError );
-    }
-
-    /**
-     *
-     */
-    WebGL.prototype.loadJSONModel = function (modelName) {
-        var self = this;
-
-         // JSON
-        this.JSONLoader.load('assets/models/' + JSONObj[modelName].file, function( geometry, materials ){
-
-                // Remove smoothing to shader
-                for( var mat = 0, length = materials.length; mat < length; mat++ ){
-                    materials[mat].shading = THREE.FlatShading;
-                };
-
-                var obj = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-                obj.name = "barque";
-                obj.animated = false;
-
-                JSONObj[modelName].obj = obj
-
-                self.modelLoaded();
-        });
-
-
-    }
-
-    /**
-     * @return void
-     */
+    */
     WebGL.prototype.modelLoaded = _.after((_.size(modelsList) + _.size(OBJList) * 2 + _.size(JSONObj)), function () {
         this.onModelsLoaded();
     });
@@ -339,34 +213,18 @@ var WebGL = (function(){
         this.scene.add(this.aSkybox);
         
         this.addWhiteSHark();
-
-        // this.addBarque();
-        
-        // this.addBob();
-        // this.addPatrick();
         
         this.addRadeau();
         this.addRondoudou();
 
-        // user
+        // current user
         this.addUser(this.avatar);
         this.barqueUser.add(this.camera);
         this.controlledObj = this.barqueUser;
         this.camera.position.set(0, 100, -300);
 
-
-
-        // camera focus
-        // this.cameraOnAircraftCarrier();
-        // this.cameraOnPatrick();
-        // this.cameraOnWhiteShark();
-        // this.cameraOnBarque();
-
-        // this.controlledObj = this.barque;
-
         this.params.onModelsLoaded();
 
-        this.stopLoading();
     };
 
     WebGL.prototype.addCameras = function () {
@@ -376,12 +234,14 @@ var WebGL = (function(){
         this.camera.lookAt(new THREE.Vector3(0, 100, 0));
         
         // Initialize Orbit control
-        this.OrbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement); 
-        //this.controls = this.OrbitControls;
+        this.orbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement); 
+        //this.controls = this.orbitControls;
     };
 
+    /**
+     * @return void
+     */
     WebGL.prototype.addLights = function () {
-
 
         this.lightSize = 100;
 
@@ -394,7 +254,6 @@ var WebGL = (function(){
         sphere.overdraw = true;
         sphere.position.set(this.directionalLightRight.position.x, this.directionalLightRight.position.y, this.directionalLightRight.position.z);
         self.scene.add(sphere);
-
 
         var directionalLightLeft = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLightLeft.position.set(50000, 25000, -50000);
@@ -414,46 +273,35 @@ var WebGL = (function(){
         sphere.position.set(this.directionalLightTop.position.x, this.directionalLightTop.position.y, this.directionalLightTop.position.z);
         self.scene.add(sphere);
 
-        // this.directionalCenter = new THREE.DirectionalLight(0xffffff, 0.5);
-        // this.directionalCenter.position.set(0, 20000, 500);
-        // this.scene.add(this.directionalCenter);
-        
-        // var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
-        // sphere.overdraw = true;
-        // sphere.position.set(this.directionalCenter.position.x, this.directionalCenter.position.y, this.directionalCenter.position.z);
-        // self.scene.add(sphere);
     }
 
+    /**
+     * @return void
+     */
     WebGL.prototype.addAircraftCarrier = function () {
         this.aircraftCarrier = new AircraftCarrier();
     };
 
+    /**
+     * @return void
+     */
     WebGL.prototype.cameraOnAircraftCarrier  = function () {
         this.aircraftCarrier.obj.add(this.camera);
         this.camera.position.set(0, 300, -800);
-        //this.camera.rotation.set(0.4, 0, 0);
     };
 
-    WebGL.prototype.cameraOnPatrick  = function () {
-        this.patrick.add(this.camera);
-        this.camera.position.set(0, 0, -20);
-        // this.camera.rotation.set(0.4, 0, 0);
-    };
-
-    WebGL.prototype.cameraOnBarque  = function () {
-        this.barque.add(this.camera);
-        this.camera.position.set(0, 100, -300);
-        // this.camera.rotation.set(1, 0, 0);
-    };
-
+    /**
+     * @return void
+     */
     WebGL.prototype.cameraOnWhiteShark  = function () {
         this.whiteSharkList[0].obj.add(this.camera);
         this.camera.position.set(0, 0, -20);
-        //this.camera.rotation.set(0.4, 0, 0);
     };
 
-    
 
+    /**
+     * @return void
+     */
     WebGL.prototype.addWhiteSHark = function () {
 
         this.whiteSharkList = [];
@@ -464,12 +312,9 @@ var WebGL = (function(){
             });
 
             shark.rotation.y = helper.getRandomAngle();
-
             scene.add(shark);
-
             this.whiteSharkList.push(shark);
         
-            //this.shark.goDown();
         }
     };
 
@@ -487,6 +332,7 @@ var WebGL = (function(){
 
         scene.add(this.barqueUser);
 
+        // socker.io
         // socket.emit('newUser', {
         //     position: {
         //         x: this.barqueUser.position.x,
@@ -501,10 +347,15 @@ var WebGL = (function(){
         // });
     };
 
-    WebGL.prototype.addNewUser = function () {
+    WebGL.prototype.addNewUser = function (avatar) {
+        if(avatar === 'Bob'){
+            var userAvatar = new Bob();
+        }
+        else if (avatar === 'Patrick'){
+            var userAvatar = new Patrick();
+        }
         var barqueUser = new Barque();
-        var avatarUser = new Bob();
-        barqueUser.add(avatarUser);
+        barqueUser.add(userAvatar);
 
         scene.add(barqueUser);
 
@@ -525,41 +376,11 @@ var WebGL = (function(){
         scene.add(this.barque);
     };
 
-
-    WebGL.prototype.addPatrick = function () {
-        this.patrick = new Patrick();
-        this.patrick.position.z = -50;
-        this.barque.add(this.patrick);    
-    };
-
-    WebGL.prototype.addBob = function () {
-        this.bob = new Bob();
-        this.barque.add(this.bob);        
-    };
-
     WebGL.prototype.addRondoudou = function () {
         this.rondoudou = new Rondoudou();
         this.rondoudou.position.z = -40;
         this.radeau.add(this.rondoudou);
     };
-
-    WebGL.prototype.newParticule = function () {
-        var self = this;
-        if(this.nbParticule < 0) {
-            return false;
-        }
-
-        this.nbParticule--;
-
-        setTimeout(function (){
-            sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
-            sphere.overdraw = true;
-            sphere.position.y = -10;
-            self.scene.add(sphere);
-            self.particulesList.push(sphere);
-            self.newParticule();
-        }, 500);
-    }
 
     WebGL.prototype.loadSkyBox = function loadSkyBox() {
 
@@ -603,10 +424,8 @@ var WebGL = (function(){
         this.countFrameToSendAPI -= 1;
         this.water.material.uniforms.time.value += 1.5 / 60.0;
         
-        // this.controls.update();
-        this.OrbitControls.update();
+        this.orbitControls.update();
         
-        // this.camera.position.x += 2;
 
         // move sharks
         for (var i = 0; i < this.whiteSharkList.length; i += 1) {
@@ -638,11 +457,13 @@ var WebGL = (function(){
 
         this.checkRondoudou();
 
-        // if(this.userChange && this.countFrameToSendAPI < 0){
-        //     // this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
-        //     // this.updateAPI();
-        //     // this.updateSocket();
-        // }
+   
+        if(this.userChange && this.countFrameToSendAPI < 0){
+            this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
+            //this.updateAPI();
+        }    
+
+        // this.updateSocket();
 
         this.display();
     },
@@ -675,7 +496,6 @@ var WebGL = (function(){
         });
 
         socket.on('userUpdate', function (data) {
-            console.log('userUpdate', data);
             self.usersList[data.userKey].obj.position.x = data.data.position.x;
             self.usersList[data.userKey].obj.position.y = data.data.position.y;
             self.usersList[data.userKey].obj.position.z = data.data.position.z;
@@ -688,10 +508,6 @@ var WebGL = (function(){
             
 
             for(var userKey in data.users) {
-                console.log('--');
-                console.log('aa', userKey);
-                console.log('bb', data.myUserKey);
-                console.log('--');
                 if (data.users.hasOwnProperty(userKey) && userKey !== data.myUserKey) {
                     self.usersList[userKey] = {
                         obj: null
@@ -721,6 +537,7 @@ var WebGL = (function(){
         this.fbUserRef = this.fbUsers.push();
         this.fbUserRef.set({
             name: '',
+            avatar: this.avatar,
             position : {
                 x: 0,
                 y: 0,
@@ -742,7 +559,6 @@ var WebGL = (function(){
             var userKey = user.name();
 
             if(user.name() === self.fbUserRefKey){
-                console.info('it same user added');
                 return false;
             }
 
@@ -752,7 +568,7 @@ var WebGL = (function(){
                 obj: null
             };
             // self.usersList[userKey].api = user.val();
-            self.usersList[userKey].obj = self.addNewUser();
+            self.usersList[userKey].obj = self.addNewUser(userVal.avatar);
             self.usersList[userKey].obj.position.x = userVal.position.x;
             self.usersList[userKey].obj.position.y = userVal.position.y;
             self.usersList[userKey].obj.position.z = userVal.position.z;
@@ -767,7 +583,6 @@ var WebGL = (function(){
             var userKey = user.name();
 
             if(userKey === self.fbUserRefKey){
-                console.info('it same user 33');
                 return false;
             }
 
@@ -786,8 +601,6 @@ var WebGL = (function(){
     };
 
     WebGL.prototype.updateAPI = function () {
-        // console.log('send to API');
-
         this.fbUserRef.update({
             position: {    
                 x: this.barqueUser.position.x,
@@ -830,13 +643,13 @@ var WebGL = (function(){
             return false;
         }
 
-        console.log('play rondoudou');
-
         this.rondoudouIsPlaying = true;
         $('#rondoudou-sound')[0].play();
 
 
     };
+
+    _.merge(WebGL.prototype, ModelsLoader.prototype);
 
     return WebGL;
 

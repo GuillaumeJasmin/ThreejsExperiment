@@ -1,5 +1,8 @@
 var Radeau = (function (){
 
+	/**
+     * @constructor Radeau
+     */
 	function Radeau () {
 
 		THREE.Object3D.call(this);
@@ -21,20 +24,19 @@ var Radeau = (function (){
 	Radeau.prototype = new THREE.Object3D();
     Radeau.prototype.constructor = Radeau;
 
-	// _.merge(Radeau.prototype, MoveControl.prototype);
+	_.merge(Radeau.prototype, MoveControl.prototype);
 
 	/**
-	 * execute at each frame
+	 * execute at render
 	 */
 	Radeau.prototype.move = function () {
 
+		// random rotation
 	    this.changeDirection();
 
 		// forward    
 	    this.translateZ(this.vit);
 	}
-
-
 
 	/**
 	 * check to change direction at each frame
@@ -75,24 +77,3 @@ var Radeau = (function (){
 	return Radeau;
 
 })();
-
-
-
-
-
-// var Radeau = function (params) {
-
-//     this.vit = 2;
-//     this.timeBeforeChangeDirection = this._getTimeBeforeChangeDirection();
-//     this.timeDuringChangeDirection = this._getTimeDuringChangeDirection();
-//     this.directionY = helper.getRandomDirection();
-
-//     this.collada = modelsList['Radeau'].obj;
-//     this = this.collada.scene.clone();
-//     this.position.set(300, 0, -0.400);
-//     this.rotation.y = 3;
-//     this.scale.set(30, 30, 30);
-//     scene.add(this);
-// }
-
-

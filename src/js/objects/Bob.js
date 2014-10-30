@@ -1,5 +1,8 @@
 var Bob = (function (){
 
+	/**
+     * @constructor Bob
+     */
 	function Bob () {
 
 		THREE.Object3D.call(this);
