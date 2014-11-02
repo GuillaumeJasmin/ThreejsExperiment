@@ -1,6 +1,6 @@
 ThreejsExperiment
 ========================
-Goeblins Workshop  
+Gobelins Workshop  
 It uses Three.js, Greensock and Jquery as depencies.  
 I also added a few Three.js extra classes from the examples for post-processing.  
 
