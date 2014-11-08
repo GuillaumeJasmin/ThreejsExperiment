@@ -1,7 +1,7 @@
 var PeerServer = require('peer').PeerServer;
 var express = require('express');
 
-var server = new PeerServer({port: 9000, path: '/'});
+var server = new PeerServer({host: 'threejs-experiment.guillaume-jasmin.fr', port: 9000, path: '/'});
 var connectedUser = [];
 
 // add user
