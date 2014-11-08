@@ -594,7 +594,7 @@ var WebGL = (function(){
 
         this.webRTC = new WebRTC({
             id: uniqid,
-            host: 'localhost',
+            host: 'threejs-experiment.guillaume-jasmin.fr',
             port: 9000,
             onReady: function () {
                 self.webRTC.connectToAll({

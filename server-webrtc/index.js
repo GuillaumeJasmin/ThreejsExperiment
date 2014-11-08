@@ -7,22 +7,20 @@ var connectedUser = [];
 // add user
 server.on('connection', function (id, a) {
 	connectedUser.push(id);
-	console.log('add', connectedUser);
+	// console.log('add', connectedUser);
 });
 
 // remove user
 server.on('disconnect', function (id) {
 	connectedUser.splice(connectedUser.indexOf(id), 1);
-	console.log('delete', connectedUser);
+	// console.log('delete', connectedUser);
 });
-
-
 
 
 var app = express();
 
 app.get('/getconnected', function(req, res){
-	res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
+	// res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
 	res.send(connectedUser);
 });
 

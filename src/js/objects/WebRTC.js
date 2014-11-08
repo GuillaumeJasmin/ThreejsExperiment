@@ -122,7 +122,7 @@ var WebRTC = (function(){
         var xmlHttp = null;
 
         xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', 'http://localhost:9001/getconnected', false );
+        xmlHttp.open('GET', 'http://threejs-experiment.guillaume-jasmin.fr:9001/getconnected', false );
         xmlHttp.send(null);
         var conntectedUsers = JSON.parse(xmlHttp.responseText);
 
