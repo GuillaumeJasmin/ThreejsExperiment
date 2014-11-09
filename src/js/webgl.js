@@ -126,7 +126,8 @@ var WebGL = (function(){
             side: THREE.DoubleSide
         });
         this.aMeshMirror = new THREE.Mesh(
-            new THREE.PlaneGeometry(900000, 900000, 100, 100),
+            // new THREE.PlaneGeometry(900000, 900000, 100, 100),
+            new THREE.PlaneBufferGeometry(900000, 900000, 100, 100),
             this.water.material
         );
 
@@ -207,7 +208,7 @@ var WebGL = (function(){
      */
     WebGL.prototype.onModelsLoaded = function () {
 
-        this.addAircraftCarrier();
+        // this.addAircraftCarrier();
 
         this.scene.add(this.aMeshMirror);
         this.scene.add(this.aSkybox);
@@ -396,7 +397,7 @@ var WebGL = (function(){
         });
 
         self.aSkybox = new THREE.Mesh(
-          new THREE.CubeGeometry(1000000, 1000000, 1000000),
+          new THREE.BoxGeometry(1000000, 1000000, 1000000),
           aSkyBoxMaterial
         );
 
@@ -419,7 +420,7 @@ var WebGL = (function(){
             this.whiteSharkList[i].move();
         }
 
-        this.aircraftCarrier.move();
+        // this.aircraftCarrier.move();
         this.radeau.move();
 
         this.userChange = false;
@@ -464,104 +465,6 @@ var WebGL = (function(){
         this.renderer.setSize(inWidth, inHeight);
         this.display();
     };
-
-
-    // /**
-    //  * @return void
-    //  * async
-    //  */
-    // WebGL.prototype.firebaseInit = function () {
-
-    //     var self = this;
-
-    //     console.log('aa');
-
-    //     this.fbRef = new Firebase('https://bob-ocean.firebaseio.com');
-    //     this.fbUsers = this.fbRef.child('users');
-
-    //     this.fbUserRef = this.fbUsers.push();
-    //     this.fbUserRef.set({
-    //         name: '',
-    //         avatar: this.avatar,
-    //         position : {
-    //             x: 0,
-    //             y: 0,
-    //             z: 0
-    //         },
-    //         rotation : {
-    //             x: 0,
-    //             y: 0,
-    //             z: 0
-    //         }
-    //     });
-    //     // We've appended a new message to the message_list location.
-    //     // var path = this.fbUserRef.toString();
-
-    //     this.fbUserRefKey = this.fbUserRef.toString().replace('https://bob-ocean.firebaseio.com/users/', '');
-
-    //     this.fbUsers.on('child_added', function (user) {
-
-    //         var userKey = user.name();
-
-    //         if(user.name() === self.fbUserRefKey){
-    //             return false;
-    //         }
-
-    //         var userVal = user.val();
-
-    //         self.usersList[userKey] = {
-    //             obj: null
-    //         };
-    //         // self.usersList[userKey].api = user.val();
-    //         self.usersList[userKey].obj = self.addNewUser(userVal.avatar);
-    //         self.usersList[userKey].obj.position.x = userVal.position.x;
-    //         self.usersList[userKey].obj.position.y = userVal.position.y;
-    //         self.usersList[userKey].obj.position.z = userVal.position.z;
-
-    //         self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
-    //         self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
-    //         self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
-    //     });
-
-    //     this.fbUsers.on('child_changed', function (user) {
-
-    //         var userKey = user.name();
-
-    //         if(userKey === self.fbUserRefKey){
-    //             return false;
-    //         }
-
-    //         var userVal = user.val();
-
-    //         // self.usersList[userKey].api = userVal;
-    //         self.usersList[userKey].obj.position.x = userVal.position.x;
-    //         self.usersList[userKey].obj.position.y = userVal.position.y;
-    //         self.usersList[userKey].obj.position.z = userVal.position.z;
-
-    //         self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
-    //         self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
-    //         self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
-    //     });
-
-    // };
-
-    // /**
-    //  * @return void
-    //  */
-    // WebGL.prototype.updateAPI = function () {
-    //     this.fbUserRef.update({
-    //         position: {
-    //             x: this.barqueUser.position.x,
-    //             y: this.barqueUser.position.y,
-    //             z: this.barqueUser.position.z
-    //         },
-    //         rotation: {
-    //             x: this.barqueUser.rotation.x,
-    //             y: this.barqueUser.rotation.y,
-    //             z: this.barqueUser.rotation.z
-    //         }
-    //     });
-    // }
 
     /**
      * @return void

@@ -8,7 +8,7 @@ var Radeau = (function (){
 		THREE.Object3D.call(this);
 
 		var obj = modelsList['Radeau'].collada.scene.children[0].clone();
-		
+
 		obj.position.set(0, 0, 0);
 		obj.scale.set(0.4, 0.4, 0.4);
 
@@ -34,7 +34,7 @@ var Radeau = (function (){
 		// random rotation
 	    this.changeDirection();
 
-		// forward    
+		// forward
 	    this.translateZ(this.vit);
 	}
 
@@ -44,8 +44,8 @@ var Radeau = (function (){
 	Radeau.prototype.changeDirection = function() {
 
 	    if(this.timeBeforeChangeDirection < 0){
-	    
-	        // rotating...    
+
+	        // rotating...
 	        this.rotation.y += helper.randomNumber(0.01, 0.0005) * this.directionY;
 
 	        // stop rotation
@@ -57,7 +57,7 @@ var Radeau = (function (){
 	    }
 
 	    this.timeBeforeChangeDirection -= 1;
-	    
+
 	};
 
 	/**
