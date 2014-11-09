@@ -22,8 +22,9 @@ server.on('disconnect', function (id) {
 var app = express();
 
 app.get('/getconnected', function(req, res){
-	res.header('Access-Control-Allow-Origin', 'http://threejs-experiment.guillaume-jasmin.fr');
+	// res.header('Access-Control-Allow-Origin', 'http://threejs-experiment.guillaume-jasmin.fr');
     // res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
+    res.header('Access-Control-Allow-Origin', '*');
 	res.send(connectedUser);
 });
 
