@@ -2,6 +2,9 @@ var socket;
 
 var scene;
 
+// var host = 'threejs-experiment.guillaume-jasmin.fr';
+var host = window.location.hostname;
+
 var modelsList = {
     'WhiteShark': {
         file: 'whiteShark.dae'
@@ -594,7 +597,7 @@ var WebGL = (function(){
 
         this.webRTC = new WebRTC({
             id: uniqid,
-            host: 'threejs-experiment.guillaume-jasmin.fr',
+            host: host,
             port: 9000,
             onReady: function () {
                 self.webRTC.connectToAll({

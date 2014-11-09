@@ -6,6 +6,9 @@ var WebRTC = (function(){
         var self = this;
         this.params = params;
 
+        // this.host = 'threejs-experiment.guillaume-jasmin.fr';
+        this.host = window.location.protocol + '//' + window.location.hostname;
+
         this.id = params.id;
         this.connections = [];
 
@@ -26,7 +29,13 @@ var WebRTC = (function(){
      */
     WebRTC.prototype.onOpen = function (id) {
         console.log('My peer ID is: ' + id);
-        this.params.onReady();
+
+        var that = this;
+        // this.params.onReady();
+
+        // setTimeout(function () {
+            that.params.onReady();
+        // }, 3000);
     };
 
     /**
@@ -122,11 +131,15 @@ var WebRTC = (function(){
         var xmlHttp = null;
 
         xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', 'http://threejs-experiment.guillaume-jasmin.fr:9001/getconnected', false );
+        xmlHttp.open('GET', this.host + ':9001/getconnected', false );
         xmlHttp.send(null);
         var conntectedUsers = JSON.parse(xmlHttp.responseText);
 
-        conntectedUsers.splice(conntectedUsers.indexOf(this.id), 1);
+        if (conntectedUsers.indexOf(this.id) !== -1) {
+            conntectedUsers.splice(conntectedUsers.indexOf(this.id), 1);
+        }
+
+        console.info('conntectedUsers after', conntectedUsers);
 
         return conntectedUsers;
     }
