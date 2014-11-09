@@ -4,7 +4,7 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    /*background-color: #000;*/ 
+    /*background-color: #000;*/
 }
 
 .avatar {
@@ -36,13 +36,30 @@ body, html {
 
 .choose-avatar {
     width: 680px;
-    margin: 100px auto; 
+    margin: 60px auto;
 }
 
 .choose-title {
     font-family: helvetica;
     text-align: center;
     line-height: 30px;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
+    margin-top: 10px;
+    font-size: 30px;
+}
+
+a {
+    color: #000;
+}
+
+.center {
+    text-align: center;
+}
+
+.multi-connect {
+    font-family: helvetica;
+    text-align: center;
+    line-height: 20px;
+    margin-bottom: 10px;
     font-size: 30px;
 }
