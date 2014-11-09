@@ -2,6 +2,9 @@ var socket;
 
 var scene;
 
+// var host = 'threejs-experiment.guillaume-jasmin.fr';
+var host = window.location.hostname;
+
 var modelsList = {
     'WhiteShark': {
         file: 'whiteShark.dae'
@@ -46,21 +49,22 @@ var keyCode = {
 
 
 var WebGL = (function(){
-    
+
     function WebGL (params){
         this.params = params;
         this.avatar = this.params.avatar;
         this.renderer = null;
-        this.camera = null; 
-        this.scene = null; 
+        this.camera = null;
+        this.scene = null;
         this.controls = null;
         this.water = null;
         this.modelsPath = 'assets/models/';
-        this.countFrameToSendAPIInitial = 1;
+        this.countFrameToSendAPIInitial = 10;
         this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
         this.lastUserInfo = {};
         this.usersList = [];
         this.multiplayer = this.params.multiplayer;
+        this.webRTC;
     };
 
 
@@ -77,13 +81,9 @@ var WebGL = (function(){
     WebGL.prototype.initialize = function (params) {
 
 
-        // if(this.multiplayer){
-        //     // this.firebaseInit();
-        // }
+        // this.firebaseInit();
 
-        this.firebaseInit();
-        
-        // this.initSocket();
+        this.initWebRTC();
 
         var self = this;
 
@@ -99,20 +99,20 @@ var WebGL = (function(){
         this.params = params;
 
         this.loadModels();
-        
+
         // Initialize Renderer, Camera and Scene
         this.renderer = this.enable? new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
         this.scene = new THREE.Scene();
         scene = this.scene;
-        
+
         this.addCameras();
 
         this.addLights();
 
-        // Load textures        
+        // Load textures
         var waterNormals = new THREE.ImageUtils.loadTexture('../assets/img/waternormals.jpg');
-        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping; 
-        
+        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+
         // Create the water effect
         this.water = new THREE.Water(this.renderer, this.camera, this.scene, {
             textureWidth: 256,
@@ -126,7 +126,8 @@ var WebGL = (function(){
             side: THREE.DoubleSide
         });
         this.aMeshMirror = new THREE.Mesh(
-            new THREE.PlaneGeometry(900000, 900000, 100, 100), 
+            // new THREE.PlaneGeometry(900000, 900000, 100, 100),
+            new THREE.PlaneBufferGeometry(900000, 900000, 100, 100),
             this.water.material
         );
 
@@ -143,7 +144,7 @@ var WebGL = (function(){
     };
 
     WebGL.prototype.onKeydown = function (event) {
-        
+
         switch(keyCode[event.keyCode]){
             case 'top':
                 this.controlledObj.startForward();
@@ -169,7 +170,7 @@ var WebGL = (function(){
     };
 
     WebGL.prototype.onKeyup = function (event) {
-        
+
         switch(keyCode[event.keyCode]){
             case 'top':
                 this.controlledObj.stopForward();
@@ -203,17 +204,17 @@ var WebGL = (function(){
     });
 
     /**
-     * 
+     *
      */
     WebGL.prototype.onModelsLoaded = function () {
 
-        this.addAircraftCarrier();
+        // this.addAircraftCarrier();
 
         this.scene.add(this.aMeshMirror);
         this.scene.add(this.aSkybox);
-        
+
         this.addWhiteSHark();
-        
+
         this.addRadeau();
         this.addRondoudou();
 
@@ -232,9 +233,9 @@ var WebGL = (function(){
         this.camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 3000000);
         this.camera.position.set(1000, 500, -1500);
         this.camera.lookAt(new THREE.Vector3(0, 100, 0));
-        
+
         // Initialize Orbit control
-        this.orbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement); 
+        this.orbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         //this.controls = this.orbitControls;
     };
 
@@ -249,7 +250,7 @@ var WebGL = (function(){
         this.directionalLightRight = new THREE.DirectionalLight(0xffffff, 0.8);
         this.directionalLightRight.position.set(-50000, 25000, -50000);
         this.scene.add(this.directionalLightRight);
-        
+
         var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
         sphere.overdraw = true;
         sphere.position.set(this.directionalLightRight.position.x, this.directionalLightRight.position.y, this.directionalLightRight.position.z);
@@ -258,7 +259,7 @@ var WebGL = (function(){
         var directionalLightLeft = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLightLeft.position.set(50000, 25000, -50000);
         this.scene.add(directionalLightLeft);
-        
+
         var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
         sphere.overdraw = true;
         sphere.position.set(directionalLightLeft.position.x, directionalLightLeft.position.y, directionalLightLeft.position.z);
@@ -267,7 +268,7 @@ var WebGL = (function(){
         this.directionalLightTop = new THREE.DirectionalLight(0xffffff, 0.8);
         this.directionalLightTop.position.set(0, 25000, 50000);
         this.scene.add(this.directionalLightTop);
-        
+
         var sphere = new THREE.Mesh(new THREE.SphereGeometry(this.lightSize, this.lightSize, this.lightSize), new THREE.MeshBasicMaterial({color: 0xffff00}));
         sphere.overdraw = true;
         sphere.position.set(this.directionalLightTop.position.x, this.directionalLightTop.position.y, this.directionalLightTop.position.z);
@@ -306,7 +307,7 @@ var WebGL = (function(){
 
         this.whiteSharkList = [];
 
-        for (var i = 0; i < 10; i += 1) {    
+        for (var i = 0; i < 10; i += 1) {
             var shark = new WhiteShark({
                 randomPosition: true
             });
@@ -314,7 +315,7 @@ var WebGL = (function(){
             shark.rotation.y = helper.getRandomAngle();
             scene.add(shark);
             this.whiteSharkList.push(shark);
-        
+
         }
     };
 
@@ -332,19 +333,6 @@ var WebGL = (function(){
 
         scene.add(this.barqueUser);
 
-        // socker.io
-        // socket.emit('newUser', {
-        //     position: {
-        //         x: this.barqueUser.position.x,
-        //         y: this.barqueUser.position.y,
-        //         z: this.barqueUser.position.z
-        //     },
-        //     rotation: {
-        //         x: this.barqueUser.rotation.x,
-        //         y: this.barqueUser.rotation.y,
-        //         z: this.barqueUser.rotation.z
-        //     }
-        // });
     };
 
     WebGL.prototype.addNewUser = function (avatar) {
@@ -386,14 +374,14 @@ var WebGL = (function(){
 
         var self = this;
 
-        var box = 'box-lakel';        
+        var box = 'box-lakel';
         var aCubeMap = THREE.ImageUtils.loadTextureCube([
           'assets/img/' + box + '/west.jpg',
           'assets/img/' + box + '/east.jpg',
           'assets/img/' + box + '/top.jpg',
           'assets/img/' + box + '/bottom.jpg',
           'assets/img/' + box + '/south.jpg',
-          'assets/img/' + box + '/north.jpg', 
+          'assets/img/' + box + '/north.jpg',
         ]);
         aCubeMap.format = THREE.RGBFormat;
 
@@ -409,10 +397,10 @@ var WebGL = (function(){
         });
 
         self.aSkybox = new THREE.Mesh(
-          new THREE.CubeGeometry(1000000, 1000000, 1000000),
+          new THREE.BoxGeometry(1000000, 1000000, 1000000),
           aSkyBoxMaterial
         );
-    
+
     };
 
     WebGL.prototype.display = function () {
@@ -423,16 +411,16 @@ var WebGL = (function(){
     WebGL.prototype.render = function () {
         this.countFrameToSendAPI -= 1;
         this.water.material.uniforms.time.value += 1.5 / 60.0;
-        
+
         this.orbitControls.update();
-        
+
 
         // move sharks
         for (var i = 0; i < this.whiteSharkList.length; i += 1) {
             this.whiteSharkList[i].move();
         }
 
-        this.aircraftCarrier.move();
+        // this.aircraftCarrier.move();
         this.radeau.move();
 
         this.userChange = false;
@@ -457,13 +445,16 @@ var WebGL = (function(){
 
         this.checkRondoudou();
 
-   
-        if(this.userChange && this.countFrameToSendAPI < 0){
-            this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
-            this.updateAPI();
-        }    
 
-        // this.updateSocket();
+        // if(this.userChange && this.countFrameToSendAPI < 0){
+        //     // this.countFrameToSendAPI = this.countFrameToSendAPIInitial;
+        //     // this.updateAPI();
+        //     this.updateMultiplayer();
+        // }
+
+        if(this.userChange){
+            this.updateMultiplayer();
+        }
 
         this.display();
     },
@@ -473,171 +464,6 @@ var WebGL = (function(){
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(inWidth, inHeight);
         this.display();
-    }
-
-
-    WebGL.prototype.initSocket = function () {
-        var self = this;
-
-        socket = io.connect('http://guillaume.local:9003');
-
-
-        socket.on('newUser', function(data) {
-            self.usersList[data.userKey] = {
-                obj: null
-            };
-            self.usersList[data.userKey].obj = self.addNewUser();
-            self.usersList[data.userKey].obj.position.x = data.data.position.x;
-            self.usersList[data.userKey].obj.position.y = data.data.position.y;
-            self.usersList[data.userKey].obj.position.z = data.data.position.z;
-            self.usersList[data.userKey].obj.rotation.x = data.data.rotation.x;
-            self.usersList[data.userKey].obj.rotation.y = data.data.rotation.y;
-            self.usersList[data.userKey].obj.rotation.z = data.data.rotation.z;
-        });
-
-        socket.on('userUpdate', function (data) {
-            self.usersList[data.userKey].obj.position.x = data.data.position.x;
-            self.usersList[data.userKey].obj.position.y = data.data.position.y;
-            self.usersList[data.userKey].obj.position.z = data.data.position.z;
-            self.usersList[data.userKey].obj.rotation.x = data.data.rotation.x;
-            self.usersList[data.userKey].obj.rotation.y = data.data.rotation.y;
-            self.usersList[data.userKey].obj.rotation.z = data.data.rotation.z;
-        });
-
-        socket.on('initOtherUser', function (data) {
-            
-
-            for(var userKey in data.users) {
-                if (data.users.hasOwnProperty(userKey) && userKey !== data.myUserKey) {
-                    self.usersList[userKey] = {
-                        obj: null
-                    };
-                    self.usersList[userKey].obj = self.addNewUser();
-                    self.usersList[userKey].obj.position.x = data.users[userKey].position.x;
-                    self.usersList[userKey].obj.position.y = data.users[userKey].position.y;
-                    self.usersList[userKey].obj.position.z = data.users[userKey].position.z;
-                    self.usersList[userKey].obj.rotation.x = data.users[userKey].rotation.x;
-                    self.usersList[userKey].obj.rotation.y = data.users[userKey].rotation.y;
-                    self.usersList[userKey].obj.rotation.z = data.users[userKey].rotation.z;
-               }
-            }
-        });
-
-        
-    };
-
-
-    /**
-     * @return void
-     * async
-     */
-    WebGL.prototype.firebaseInit = function () {
-
-        var self = this;
-
-        this.fbRef = new Firebase('https://bob-ocean.firebaseio.com');
-        this.fbUsers = this.fbRef.child('users');
-
-        this.fbUserRef = this.fbUsers.push();
-        this.fbUserRef.set({
-            name: '',
-            avatar: this.avatar,
-            position : {
-                x: 0,
-                y: 0,
-                z: 0
-            },
-            rotation : {
-                x: 0,
-                y: 0,
-                z: 0
-            }
-        });
-        // We've appended a new message to the message_list location.
-        // var path = this.fbUserRef.toString();
-
-        this.fbUserRefKey = this.fbUserRef.toString().replace('https://bob-ocean.firebaseio.com/users/', '');
-
-        this.fbUsers.on('child_added', function (user) {
-
-            var userKey = user.name();
-
-            if(user.name() === self.fbUserRefKey){
-                return false;
-            }
-
-            var userVal = user.val();
-
-            self.usersList[userKey] = {
-                obj: null
-            };
-            // self.usersList[userKey].api = user.val();
-            self.usersList[userKey].obj = self.addNewUser(userVal.avatar);
-            self.usersList[userKey].obj.position.x = userVal.position.x;
-            self.usersList[userKey].obj.position.y = userVal.position.y;
-            self.usersList[userKey].obj.position.z = userVal.position.z;
-
-            self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
-            self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
-            self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
-        });
-
-        this.fbUsers.on('child_changed', function (user) {
-
-            var userKey = user.name();
-
-            if(userKey === self.fbUserRefKey){
-                return false;
-            }
-
-            var userVal = user.val();
-
-            // self.usersList[userKey].api = userVal;
-            self.usersList[userKey].obj.position.x = userVal.position.x;
-            self.usersList[userKey].obj.position.y = userVal.position.y;
-            self.usersList[userKey].obj.position.z = userVal.position.z;
-
-            self.usersList[userKey].obj.rotation.x = userVal.rotation.x;
-            self.usersList[userKey].obj.rotation.y = userVal.rotation.y;
-            self.usersList[userKey].obj.rotation.z = userVal.rotation.z;
-        });
-
-    };
-
-    /**
-     * @return void
-     */
-    WebGL.prototype.updateAPI = function () {
-        this.fbUserRef.update({
-            position: {    
-                x: this.barqueUser.position.x,
-                y: this.barqueUser.position.y,
-                z: this.barqueUser.position.z
-            },
-            rotation: {    
-                x: this.barqueUser.rotation.x,
-                y: this.barqueUser.rotation.y,
-                z: this.barqueUser.rotation.z
-            }
-        });
-    }
-
-    /**
-     * @return void
-     */
-    WebGL.prototype.updateSocket = function () {
-        socket.emit('userUpdate', {
-            position: {
-                x: this.barqueUser.position.x,
-                y: this.barqueUser.position.y,
-                z: this.barqueUser.position.z
-            },
-            rotation: {
-                x: this.barqueUser.rotation.x,
-                y: this.barqueUser.rotation.y,
-                z: this.barqueUser.rotation.z
-            }
-        });
     };
 
     /**
@@ -650,7 +476,7 @@ var WebGL = (function(){
             }
         }
     }
-    
+
     /**
      * @return void
      */
@@ -664,6 +490,70 @@ var WebGL = (function(){
 
 
     };
+
+    WebGL.prototype.updateMultiplayer = function () {};
+
+    WebGL.prototype.initWebRTC = function () {
+        var self = this;
+
+        var uniqid = helper.uniqid();
+
+        this.webRTC = new WebRTC({
+            id: uniqid,
+            host: host,
+            port: 9000,
+            onReady: function () {
+                self.webRTC.connectToAll({
+                    avatar: self.avatar
+                });
+            },
+            onData: function (connection, data) {
+                self.updateUserWebRTC(connection, data);
+            },
+            onConnectionOpen: function (connection) {
+                console.log(connection);
+            }
+        });
+
+        this.updateMultiplayer = this.updateCurrentUser;
+    }
+
+    WebGL.prototype.updateUserWebRTC = function (connection, data) {
+
+        console.log('this', this);
+
+        if(!this.usersList[data.id]){
+            this.usersList[data.id] = {
+                obj: this.addNewUser(data.avatar)
+            };
+        }
+
+        this.usersList[data.id].obj.position.x = data.position.x;
+        this.usersList[data.id].obj.position.y = data.position.y;
+        this.usersList[data.id].obj.position.z = data.position.z;
+
+        this.usersList[data.id].obj.rotation.x = data.rotation.x;
+        this.usersList[data.id].obj.rotation.y = data.rotation.y;
+        this.usersList[data.id].obj.rotation.z = data.rotation.z;
+    };
+
+    WebGL.prototype.updateCurrentUser = function () {
+
+        this.webRTC.broadcast({
+            avatar: this.avatar,
+            position: {
+                x: this.barqueUser.position.x,
+                y: this.barqueUser.position.y,
+                z: this.barqueUser.position.z
+            },
+            rotation: {
+                x: this.barqueUser.rotation.x,
+                y: this.barqueUser.rotation.y,
+                z: this.barqueUser.rotation.z
+            }
+        });
+
+    }
 
     _.merge(WebGL.prototype, ModelsLoader.prototype);
 
