@@ -2,8 +2,8 @@ var socket;
 
 var scene;
 
-// var host = 'threejs-experiment.guillaume-jasmin.fr';
-var host = window.location.hostname;
+var host = 'threejs-experiment.guillaume-jasmin.fr';
+// var host = window.location.hostname;
 
 var modelsList = {
     'WhiteShark': {
@@ -110,7 +110,7 @@ var WebGL = (function(){
         this.addLights();
 
         // Load textures
-        var waterNormals = new THREE.ImageUtils.loadTexture('../assets/img/waternormals.jpg');
+        var waterNormals = new THREE.ImageUtils.loadTexture('./assets/img/waternormals.jpg');
         waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
 
         // Create the water effect
