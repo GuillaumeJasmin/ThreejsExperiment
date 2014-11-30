@@ -6,7 +6,7 @@ var WebRTC = (function(){
         var self = this;
         this.params = params;
 
-        this.host = 'threejs-experiment.guillaume-jasmin.fr';
+        this.host = 'http://threejs-experiment.guillaume-jasmin.fr';
         // this.host = window.location.protocol + '//' + window.location.hostname;
 
         this.id = params.id;

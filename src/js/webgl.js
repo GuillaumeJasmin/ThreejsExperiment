@@ -2,7 +2,7 @@ var socket;
 
 var scene;
 
-var host = 'threejs-experiment.guillaume-jasmin.fr';
+var host = 'http://threejs-experiment.guillaume-jasmin.fr';
 // var host = window.location.hostname;
 
 var modelsList = {
